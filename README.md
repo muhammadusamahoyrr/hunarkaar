@@ -109,3 +109,27 @@ MONGODB_URI=mongodb+srv://...
 - Hairline 1px dividers between sections
 
 See `design.md` for the full design system spec.
+
+---
+
+## Built with Claude Code
+
+This project was built entirely using **[Claude Code](https://claude.ai/code)** — Anthropic's AI coding assistant. The following Claude Code skills and tools were used throughout development:
+
+| Skill / Tool | What it did |
+|---|---|
+| **Playwright MCP** (`mcp__chrome-devtools__*`) | Launched a real browser, navigated to `localhost:3000`, and took screenshots after every UI change to visually verify layout, spacing, colours, and animations |
+| **`/verify`** | Ran the app and confirmed each feature worked end-to-end before moving on — hero crossfade, mega menu, cart sidebar, modals, scroll animations |
+| **`/run`** | Started the Next.js Turbopack dev server from within the Claude Code session so the browser tools could connect to it |
+| **`/code-review`** | Reviewed diffs for correctness, redundant CSS, and component structure after larger refactors |
+| **File tools** (Read, Edit, Write, Glob, Grep) | Read and edited source files directly — `Homepage.tsx`, `globals.css`, API routes, Mongoose models |
+| **Bash / PowerShell** | Ran `npm install`, checked build errors, managed git |
+
+### Development workflow
+
+1. Describe a section or feature in plain English
+2. Claude Code writes/edits the code
+3. `/run` starts (or keeps running) the dev server
+4. Playwright MCP takes a screenshot and Claude inspects it
+5. Iterate until the visual matches the RH design reference
+6. `/verify` confirms the interaction works (hover states, transitions, modal open/close, etc.)
