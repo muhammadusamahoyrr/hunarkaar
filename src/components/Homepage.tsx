@@ -408,6 +408,11 @@ const NAV_MENUS: Record<string, NavMenu> = {
   },
 };
 
+const CATEGORY_ROUTES: Record<string, string> = {
+  Living: '/shop/living',
+  Textiles: '/textiles',
+};
+
 const NAV_ITEMS: Array<{ name: string; extraClass?: string; href?: string }> = [
   { name: 'Estates' },
   { name: 'Living' },
@@ -858,7 +863,7 @@ export default function Homepage({ initialProducts }: HomepageProps) {
               {/* ── Left: heading + links ── */}
               <div className="cat-links-col">
                 <div className="cat-menu-heading">{activeMenu}</div>
-                <a href="#new-arrivals" className="cat-shopall" onClick={() => setActiveMenu(null)}>
+                <a href={CATEGORY_ROUTES[activeMenu] ?? '#new-arrivals'} className="cat-shopall" onClick={() => setActiveMenu(null)}>
                   Shop All {activeMenu}
                 </a>
                 <p className="cat-popular-label">{NAV_MENUS[activeMenu].popularLabel ?? 'Popular'}</p>

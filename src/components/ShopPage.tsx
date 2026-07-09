@@ -1,46 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-
-/* ============================================================
-   TYPES
-   ============================================================ */
-interface ProductItem {
-  id: string;
-  name: string;
-  category: string;
-  usdPrice: number;
-  pkrPrice: number;
-  img: string;
-  description: string;
-  artisan: string;
-}
+import { LOCAL_PRODUCTS } from '@/lib/localProducts';
+import type { ProductItem } from '@/lib/siteData';
 
 interface ShopPageProps {
   initialProducts: ProductItem[];
 }
-
-/* ============================================================
-   LOCAL PRODUCTS — public-folder furniture images
-   ============================================================ */
-const LOCAL_PRODUCTS: ProductItem[] = [
-  { id: 'lp-a', name: 'Woven Leather Bench', category: 'Bench', usdPrice: 189, pkrPrice: 52920, img: '/Woven Leather Bench/a1.png', description: 'Hand-woven natural leather strips over a solid teak frame. Each piece is unique.', artisan: 'Ustad Noor Ahmad, Lahore' },
-  { id: 'lp-b', name: 'Chiniot Walnut Wood Bench', category: 'Bench', usdPrice: 245, pkrPrice: 68600, img: '/woodbench/b1.png', description: 'Hand-carved walnut bench from the master woodcarvers of Chiniot.', artisan: 'Khurshid Alam, Chiniot Studio' },
-  { id: 'lp-c', name: 'Foldable Cotton Kilim Bench', category: 'Bench', usdPrice: 129, pkrPrice: 36120, img: '/Foldable Cotton Kilim Bench/c1.png', description: 'Foldable bench upholstered in hand-woven kilim cotton from Sindh.', artisan: 'Mai Fatima, Bhit Shah' },
-  { id: 'lp-d', name: 'Palm Leaf Bench', category: 'Bench', usdPrice: 98, pkrPrice: 27440, img: '/Palm Leaf Bench/d1.png', description: 'Woven palm leaf bench, sustainably crafted by Balochi artisans.', artisan: 'Haji Sardar, Quetta Collective' },
-  { id: 'lp-e', name: 'Real Walnut Wood Bench', category: 'Bench', usdPrice: 310, pkrPrice: 86800, img: '/Real Walnut Wood Bench/e1.png', description: 'Solid walnut bench with hand-chiselled joinery. No metal fasteners.', artisan: 'Master Iqbal, Rawalpindi Workshop' },
-  { id: 'lp-f', name: 'Handwoven Palm Leaf Bench', category: 'Bench', usdPrice: 115, pkrPrice: 32200, img: '/handwoven Palm Leaf Bench/f1.png', description: 'Tightly woven palm leaf over a bamboo frame. Lightweight and durable.', artisan: 'Gohar Bibi, Sindh Craft Council' },
-  { id: 'lp-g', name: 'Chaise Lounge', category: 'Lounge', usdPrice: 420, pkrPrice: 117600, img: '/chaise lounge/g1.png', description: 'Relaxed chaise lounge in hand-dyed cotton canvas on solid mango wood frame.', artisan: 'Aziz Furniture House, Lahore' },
-  { id: 'lp-h', name: 'Natural Leather Bench', category: 'Bench', usdPrice: 220, pkrPrice: 61600, img: '/Natural Leather Bench/h1.png', description: 'Full-grain buffalo leather bench hand-stitched by master leather craftsmen.', artisan: 'Ghulam Nabi, Karachi Saddar' },
-  { id: 'lp-i', name: 'Kilim Rug Bench', category: 'Bench', usdPrice: 165, pkrPrice: 46200, img: '/Kilim Rug Bench/i1.png', description: 'Vintage kilim fabric over a solid oak base. Each fabric is sourced from antique looms.', artisan: 'Amina Textiles, Multan' },
-  { id: 'lp-j', name: 'Jute Kilim Bench', category: 'Bench', usdPrice: 109, pkrPrice: 30520, img: '/Jute Kilim Bench/j1.png', description: 'Eco-friendly jute kilim over reclaimed wood. Earthy tones, artisan finish.', artisan: 'Sajida Looms, Hyderabad' },
-  { id: 'lp-k', name: 'Solid Teak Wood Stool', category: 'Stool', usdPrice: 88, pkrPrice: 24640, img: '/Solid Teak Wood Stool/k1.png', description: 'Single-piece solid teak stool with hand-turned legs. Oil-finished for longevity.', artisan: 'Tariq Woodworks, Gujranwala' },
-  { id: 'lp-t', name: 'Brown Truffle Woven Bench', category: 'Bench', usdPrice: 175, pkrPrice: 49000, img: '/Brown Truffle Woven Bench/t1.png', description: 'Rich truffle-toned woven leather bench with mahogany base.', artisan: 'Ustad Bashir, Sialkot Leather Guild' },
-  { id: 'lp-l', name: 'Handmade Kilim Bench', category: 'Bench', usdPrice: 148, pkrPrice: 41440, img: '/handmade  Kilim Bench/l1.png', description: 'Vibrant kilim patchwork on solid walnut. Each bench is a unique composition.', artisan: 'Zubeda Craft House, Lahore' },
-  { id: 'lp-u', name: 'Rattan Bench', category: 'Bench', usdPrice: 135, pkrPrice: 37800, img: '/Rattan Bench/u1.png', description: 'Hand-woven rattan over a black-lacquered steel frame. Indoor & veranda ready.', artisan: 'Mukhtar Rattan Arts, Peshawar' },
-  { id: 'lp-v', name: 'Upholstered Wooden Slipper Chair', category: 'Chair', usdPrice: 295, pkrPrice: 82600, img: '/Upholstered Wooden Slipper Chair/v1.png', description: 'Low-profile slipper chair with hand-carved walnut legs and block-print upholstery.', artisan: 'Fazal Ahmad, Chiniot Master Guild' },
-  { id: 'lp-vc', name: 'Handmade Canella Chair', category: 'Chair', usdPrice: 265, pkrPrice: 74200, img: '/handmade Canella/v.png', description: 'Sculptural canella cane chair woven in a traditional spiral pattern.', artisan: 'Rasheed Furniture Co., Rawalpindi' },
-];
 
 /* ============================================================
    NAV DATA
@@ -73,9 +39,11 @@ const SUBCATEGORIES = [
 
 const SORT_OPTIONS = [
   { value: 'featured', label: 'Featured' },
-  { value: 'newest', label: 'New Arrivals' },
+  { value: 'newest', label: 'Newest' },
   { value: 'price-asc', label: 'Price: Low to High' },
   { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'az', label: 'Alphabetically, A–Z' },
+  { value: 'za', label: 'Alphabetically, Z–A' },
 ];
 
 const MATERIALS = ['Walnut Wood', 'Teak', 'Rattan', 'Leather', 'Kilim', 'Jute', 'Palm Leaf', 'Cotton'];
@@ -133,6 +101,65 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
   const [activeTab, setActiveTab] = useState<'products' | 'collections' | 'inspiration'>('products');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
+  /* ---- Subcategory scroller (snap + arrows + drag) ---- */
+  const subcatRef = useRef<HTMLDivElement>(null);
+  const [subcatNav, setSubcatNav] = useState({ left: false, right: false });
+  const dragState = useRef({ down: false, startX: 0, startScroll: 0, moved: false });
+
+  const updateSubcatNav = useCallback(() => {
+    const el = subcatRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setSubcatNav({ left: el.scrollLeft > 4, right: el.scrollLeft < max - 4 });
+  }, []);
+
+  useEffect(() => {
+    updateSubcatNav();
+    window.addEventListener('resize', updateSubcatNav);
+    return () => window.removeEventListener('resize', updateSubcatNav);
+  }, [updateSubcatNav]);
+
+  const scrollSubcat = (dir: number) => {
+    const el = subcatRef.current;
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+  };
+
+  const onSubcatDown = (e: React.PointerEvent) => {
+    const el = subcatRef.current;
+    if (!el) return;
+    dragState.current = { down: true, startX: e.clientX, startScroll: el.scrollLeft, moved: false };
+  };
+  const onSubcatMove = (e: React.PointerEvent) => {
+    const el = subcatRef.current;
+    const d = dragState.current;
+    if (!el || !d.down) return;
+    const dx = e.clientX - d.startX;
+    if (Math.abs(dx) > 4) {
+      d.moved = true;
+      el.setPointerCapture(e.pointerId);
+    }
+    el.scrollLeft = d.startScroll - dx;
+  };
+  const onSubcatUp = () => { dragState.current.down = false; };
+
+  /* ---- Custom sort dropdown ---- */
+  const sortRef = useRef<HTMLDivElement>(null);
+  const [sortOpen, setSortOpen] = useState(false);
+  useEffect(() => {
+    if (!sortOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSortOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [sortOpen]);
+  const currentSortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Featured';
+
   /* ---- Combined products ---- */
   const allProducts = useMemo(() => {
     const combined = [...initialProducts];
@@ -170,6 +197,8 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
     if (sortBy === 'price-asc') list.sort((a, b) => a.usdPrice - b.usdPrice);
     else if (sortBy === 'price-desc') list.sort((a, b) => b.usdPrice - a.usdPrice);
     else if (sortBy === 'newest') list.reverse();
+    else if (sortBy === 'az') list.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === 'za') list.sort((a, b) => b.name.localeCompare(a.name));
 
     return list;
   }, [allProducts, activeSubcat, activeMaterials, activePriceRange, sortBy]);
@@ -214,6 +243,35 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
       prev.includes(mat) ? prev.filter(m => m !== mat) : [...prev, mat]
     );
   };
+
+  /* ---- Accordion sections (PB-style inline filter sidebar) ---- */
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    category: true, material: true, price: true,
+  });
+  const toggleSection = (id: string) =>
+    setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
+
+  /* ---- Filter counts (from all products, unfiltered) ---- */
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allProducts.forEach(p => { counts[p.category] = (counts[p.category] || 0) + 1; });
+    return counts;
+  }, [allProducts]);
+
+  const materialCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allProducts.forEach(p => {
+      getMaterial(p.name).forEach(m => { counts[m] = (counts[m] || 0) + 1; });
+    });
+    return counts;
+  }, [allProducts]);
+
+  const priceCounts = useMemo(() => {
+    return PRICE_RANGES.map(range => ({
+      ...range,
+      count: allProducts.filter(p => p.usdPrice >= range.min && p.usdPrice <= range.max).length,
+    }));
+  }, [allProducts]);
 
   return (
     <>
@@ -263,17 +321,25 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
               <span className={`hamburger-icon${mobileMenuOpen ? ' open' : ''}`}><span /><span /><span /></span>
             </button>
             <div className="pb-search-box">
+              <button className="pb-search-btn" aria-label="Search">
+                <i className="fa-solid fa-magnifying-glass" />
+              </button>
               <input
                 type="text"
                 placeholder="Search handcrafted pieces…"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                onFocus={() => setSearchOpen(true)}
                 className="pb-search-input"
               />
-              <button className="pb-search-btn" aria-label="Search">
-                <i className="fa-solid fa-magnifying-glass" />
-              </button>
+              {searchTerm && (
+                <button
+                  className="pb-search-clear"
+                  aria-label="Clear search"
+                  onClick={() => setSearchTerm('')}
+                >
+                  <i className="fa-solid fa-xmark" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -317,24 +383,6 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
             </a>
           ))}
         </nav>
-
-        {/* Row 5 — Promo bar */}
-        <div className="pb-promo-bar">
-          {[
-            { title: 'Free Shipping*', sub: 'On orders over $150 ›' },
-            { title: 'Bespoke Commissions', sub: 'Custom made to order ›' },
-            { title: '400+ Years of Craft', sub: 'Artisan-sourced pieces ›' },
-            { title: 'Arrives in 2–4 Weeks', sub: 'Shop in-stock furniture ›' },
-          ].map((item, i) => (
-            <React.Fragment key={item.title}>
-              {i > 0 && <div className="pb-promo-sep" />}
-              <div className="pb-promo-item">
-                <strong>{item.title}</strong>
-                <span>{item.sub}</span>
-              </div>
-            </React.Fragment>
-          ))}
-        </div>
 
       </header>
 
@@ -433,63 +481,6 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
       </aside>
 
       {/* =====================================================
-           FILTER DRAWER
-         ===================================================== */}
-      {filterOpen && <div className="shop-filter-backdrop" onClick={() => setFilterOpen(false)} />}
-      <aside className={`shop-filter-drawer${filterOpen ? ' open' : ''}`} data-lenis-prevent>
-        <div className="shop-filter-head">
-          <span>Filter</span>
-          <button onClick={() => setFilterOpen(false)}><i className="fa-solid fa-xmark" /></button>
-        </div>
-
-        <div className="shop-filter-section">
-          <div className="shop-filter-label">Category</div>
-          {['Bench', 'Chair', 'Stool', 'Lounge', 'Sofa', 'Storage'].map(cat => (
-            <label key={cat} className="shop-filter-check">
-              <input
-                type="checkbox"
-                checked={activeSubcat === cat}
-                onChange={() => setActiveSubcat(prev => prev === cat ? null : cat)}
-              />
-              {cat}s
-            </label>
-          ))}
-        </div>
-
-        <div className="shop-filter-section">
-          <div className="shop-filter-label">Material</div>
-          {MATERIALS.map(mat => (
-            <label key={mat} className="shop-filter-check">
-              <input
-                type="checkbox"
-                checked={activeMaterials.includes(mat)}
-                onChange={() => toggleMaterial(mat)}
-              />
-              {mat}
-            </label>
-          ))}
-        </div>
-
-        <div className="shop-filter-section">
-          <div className="shop-filter-label">Price</div>
-          {PRICE_RANGES.map(range => (
-            <label key={range.label} className="shop-filter-check">
-              <input
-                type="checkbox"
-                checked={activePriceRange?.label === range.label}
-                onChange={() => setActivePriceRange(prev => prev?.label === range.label ? null : { ...range, label: range.label } as any)}
-              />
-              {range.label}
-            </label>
-          ))}
-        </div>
-
-        {hasFilters && (
-          <button className="shop-filter-clear" onClick={clearFilters}>Clear All Filters</button>
-        )}
-      </aside>
-
-      {/* =====================================================
            MAIN SHOP CONTENT
          ===================================================== */}
       <main className="shop-main">
@@ -526,20 +517,51 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
           </div>
         </div>
 
-        {/* Subcategory horizontal scroll */}
-        <div className="shop-subcat-scroll">
-          {SUBCATEGORIES.map(sub => (
-            <button
-              key={sub.label}
-              className={`shop-subcat-item${activeSubcat === sub.filter ? ' active' : ''}`}
-              onClick={() => setActiveSubcat(prev => prev === sub.filter ? null : sub.filter)}
-            >
-              <div className="shop-subcat-img-wrap">
-                <img src={sub.img} alt={sub.label} />
-              </div>
-              <span className="shop-subcat-label">{sub.label}</span>
-            </button>
-          ))}
+        {/* Subcategory horizontal scroll — snap + arrows + drag */}
+        <div className={`shop-subcat-wrap${subcatNav.left ? ' fade-left' : ''}${subcatNav.right ? ' fade-right' : ''}`}>
+          <button
+            className={`shop-subcat-arrow left${subcatNav.left ? ' show' : ''}`}
+            onClick={() => scrollSubcat(-1)}
+            aria-label="Scroll categories left"
+            tabIndex={subcatNav.left ? 0 : -1}
+          >
+            <i className="fa-solid fa-chevron-left" />
+          </button>
+
+          <div
+            className="shop-subcat-scroll"
+            ref={subcatRef}
+            onScroll={updateSubcatNav}
+            onPointerDown={onSubcatDown}
+            onPointerMove={onSubcatMove}
+            onPointerUp={onSubcatUp}
+            onPointerLeave={onSubcatUp}
+          >
+            {SUBCATEGORIES.map(sub => (
+              <button
+                key={sub.label}
+                className={`shop-subcat-item${activeSubcat === sub.filter ? ' active' : ''}`}
+                onClick={() => {
+                  if (dragState.current.moved) { dragState.current.moved = false; return; }
+                  setActiveSubcat(prev => prev === sub.filter ? null : sub.filter);
+                }}
+              >
+                <div className="shop-subcat-img-wrap">
+                  <img src={sub.img} alt={sub.label} draggable={false} />
+                </div>
+                <span className="shop-subcat-label">{sub.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <button
+            className={`shop-subcat-arrow right${subcatNav.right ? ' show' : ''}`}
+            onClick={() => scrollSubcat(1)}
+            aria-label="Scroll categories right"
+            tabIndex={subcatNav.right ? 0 : -1}
+          >
+            <i className="fa-solid fa-chevron-right" />
+          </button>
         </div>
 
         {/* Divider */}
@@ -547,26 +569,44 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
 
         {/* Filter / Sort sticky bar */}
         <div className="shop-filterbar">
-          <button className="shop-filter-btn" onClick={() => setFilterOpen(true)}>
+          <button className="shop-filter-btn" onClick={() => setFilterOpen(f => !f)}>
             <i className="fa-solid fa-sliders" style={{ marginRight: '0.5rem' }} />
-            Filter
+            {filterOpen ? 'Hide Filter' : 'Filter'}
           </button>
 
           <div className="shop-filterbar-right">
             {hasFilters && (
               <button className="shop-clear-link" onClick={clearFilters}>Clear All</button>
             )}
-            <div className="shop-sort-wrap">
-              <select
-                className="shop-sort-select"
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
+            <div className="shop-sort-wrap" ref={sortRef}>
+              <button
+                type="button"
+                className={`shop-sort-trigger${sortOpen ? ' open' : ''}`}
+                onClick={() => setSortOpen(o => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={sortOpen}
               >
-                {SORT_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-              <i className="fa-solid fa-chevron-down shop-sort-icon" />
+                <span className="shop-sort-trigger-label">
+                  Sort: <strong>{currentSortLabel}</strong>
+                </span>
+                <i className="fa-solid fa-chevron-down shop-sort-caret" />
+              </button>
+              {sortOpen && (
+                <ul className="shop-sort-menu" role="listbox">
+                  {SORT_OPTIONS.map(o => (
+                    <li
+                      key={o.value}
+                      role="option"
+                      aria-selected={sortBy === o.value}
+                      className={`shop-sort-option${sortBy === o.value ? ' active' : ''}`}
+                      onClick={() => { setSortBy(o.value); setSortOpen(false); }}
+                    >
+                      <span>{o.label}</span>
+                      {sortBy === o.value && <i className="fa-solid fa-check" />}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>
@@ -595,7 +635,92 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
           </div>
         )}
 
+        {/* =====================================================
+             CONTENT AREA — inline filter sidebar + grid (PB-style)
+           ===================================================== */}
+        <div className="shop-content-area">
+
+        {filterOpen && (
+          <aside className="shop-filter-sidebar">
+            {/* Category */}
+            <div className="shop-filter-section">
+              <button className="shop-filter-accordion-btn" onClick={() => toggleSection('category')}>
+                <span>Category</span>
+                <i className={`fa-solid fa-chevron-${openSections.category ? 'up' : 'down'}`} />
+              </button>
+              {openSections.category && (
+                <div className="shop-filter-section-body">
+                  {['Bench', 'Chair', 'Stool', 'Lounge', 'Sofa', 'Storage'].map(cat => (
+                    <label key={cat} className="shop-filter-check">
+                      <input
+                        type="checkbox"
+                        checked={activeSubcat === cat}
+                        onChange={() => setActiveSubcat(prev => prev === cat ? null : cat)}
+                      />
+                      <span>{cat}s</span>
+                      <span className="shop-filter-count">({categoryCounts[cat] || 0})</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Material */}
+            <div className="shop-filter-section">
+              <button className="shop-filter-accordion-btn" onClick={() => toggleSection('material')}>
+                <span>Material</span>
+                <i className={`fa-solid fa-chevron-${openSections.material ? 'up' : 'down'}`} />
+              </button>
+              {openSections.material && (
+                <div className="shop-filter-section-body">
+                  {MATERIALS.map(mat => (
+                    <label key={mat} className="shop-filter-check">
+                      <input
+                        type="checkbox"
+                        checked={activeMaterials.includes(mat)}
+                        onChange={() => toggleMaterial(mat)}
+                      />
+                      <span>{mat}</span>
+                      <span className="shop-filter-count">({materialCounts[mat.split(' ')[0]] || 0})</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Price */}
+            <div className="shop-filter-section">
+              <button className="shop-filter-accordion-btn" onClick={() => toggleSection('price')}>
+                <span>Price</span>
+                <i className={`fa-solid fa-chevron-${openSections.price ? 'up' : 'down'}`} />
+              </button>
+              {openSections.price && (
+                <div className="shop-filter-section-body">
+                  {priceCounts.map(range => (
+                    <label key={range.label} className="shop-filter-check">
+                      <input
+                        type="checkbox"
+                        checked={activePriceRange?.label === range.label}
+                        onChange={() => setActivePriceRange(prev =>
+                          prev?.label === range.label ? null : { ...range } as any
+                        )}
+                      />
+                      <span>{range.label}</span>
+                      <span className="shop-filter-count">({range.count})</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {hasFilters && (
+              <button className="shop-filter-clear" onClick={clearFilters}>Clear All Filters</button>
+            )}
+          </aside>
+        )}
+
         {/* Product Grid */}
+        <div className={`shop-grid-wrap${filterOpen ? ' sidebar-open' : ''}`}>
         <div className="shop-grid">
           {displayProducts.length === 0 ? (
             <div className="shop-empty">No products match your filters.</div>
@@ -615,12 +740,14 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
                 >
                   {/* Image */}
                   <div className="shop-card-img-wrap">
-                    <img
-                      src={product.img}
-                      alt={product.name}
-                      className="shop-card-img"
-                      onError={e => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${product.id}/600/500`; }}
-                    />
+                    <a href={`/shop/product/${product.id}`} className="shop-card-img-link" aria-label={product.name}>
+                      <img
+                        src={product.img}
+                        alt={product.name}
+                        className="shop-card-img"
+                        onError={e => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${product.id}/600/500`; }}
+                      />
+                    </a>
 
                     {/* Badge */}
                     {badge && (
@@ -661,7 +788,7 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
                     </div>
 
                     {/* Name */}
-                    <a href="#" className="shop-card-name">{product.name}</a>
+                    <a href={`/shop/product/${product.id}`} className="shop-card-name">{product.name}</a>
 
                     {/* Artisan */}
                     <div className="shop-card-artisan">{product.artisan}</div>
@@ -676,6 +803,9 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
               );
             })
           )}
+        </div>
+
+        </div>
         </div>
 
         {/* Load more */}
