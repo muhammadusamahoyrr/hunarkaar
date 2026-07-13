@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -70,7 +71,9 @@ export default function ShopTheRoom() {
 
       {/* Clickable room image */}
       <motion.div
-        style={{ position: 'relative', cursor: 'pointer', lineHeight: 0 }}
+        /* overflow:hidden contains the [data-wipe] over-scale — without it the
+           image bleeds past this box while it settles back to scale 1. */
+        style={{ position: 'relative', cursor: 'pointer', lineHeight: 0, overflow: 'hidden' }}
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: '-80px' }}
@@ -79,11 +82,15 @@ export default function ShopTheRoom() {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <img
-          src="/room.png"
+        <Image
+          src="/room.webp"
           alt="Hunarkar — Shop the Room"
+          width={1195}
+          height={712}
+          sizes="100vw"
           draggable={false}
-          style={{ width: '100%', display: 'block', userSelect: 'none' }}
+          data-wipe=""
+          style={{ width: '100%', height: 'auto', display: 'block', userSelect: 'none' }}
         />
 
         {/* Hover overlay */}
@@ -120,7 +127,7 @@ export default function ShopTheRoom() {
                   style={{
                     width: 56,
                     height: 56,
-                    borderRadius: '50%',
+                    borderRadius: 0,
                     border: '1px solid rgba(241,237,232,0.7)',
                     background: 'rgba(241,237,232,0.12)',
                     backdropFilter: 'blur(6px)',

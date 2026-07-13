@@ -18,6 +18,25 @@
 
 ## Fonts
 - **Cormorant Garamond** (`var(--font-display)`) — all display headings, editorial text
+  - Use the canonical `.hp-section-heading` class for section `<h2>`s rather than
+    restyling per section. Four landing-page headings had drifted to **Jost 700 at
+    -0.5px** — a heavy geometric sans — and read as a different site bolted on.
+  - **Serifs want tracking OPEN (+0.02em), never tightened.** The negative
+    letter-spacing that flatters a geometric sans strangles a high-contrast serif.
+  - **Weight is what makes a display serif feel cheap.** The h1 was Cormorant 700;
+    at 58px+ the right register is **300**. Section h2s sit at 400 — bumped to 500
+    only on the sandstone panels, where a thin serif stroke goes weak on a mid-tone.
+  - The masked reveal (`[data-split]`) clips descenders if `.sr-word`'s
+    padding/margin pair is reduced — Cormorant's tails are deeper than Jost's.
+  - **Approved exception — the two commercial panels.** `.hp-transform-title` and
+    `.hp-sale-title` are **Jost light in wide-tracked caps** (0.09–0.1em), not
+    Cormorant. User-requested: the promo panels get a contemporary voice against
+    the editorial serif everywhere else. Do not "fix" them back to the serif.
+    - Weight is **400 on the sandstone panel, 300 on linen** — a 300 geometric
+      stroke goes weak against a mid-tone.
+    - Caps + open tracking runs WIDE. The Transform text column is only ~44% of
+      the panel, so its size sits well below the mixed-case scale. If you enlarge
+      it, re-check that "TRANSFORM" still fits at 390px.
 - **Jost** (`var(--font-body)`) — nav, labels, body copy
 
 ## Colour Palette
@@ -36,9 +55,37 @@
 - **No filled buttons anywhere** — all CTAs are underlined text links
 - **No rounded corners** — everything is sharp rectangles (exception: mega-menu column images have `border-radius: 4px`)
 - **No parallax** — sections fade in with `opacity 0→1, y 30→0`
+  - **Approved exception — hero scale + dim.** The hero media scrubs `scale 1 → 1.14`
+    with a `.hero-dim` scrim fading `0 → 0.72` as it scrolls out. This is a
+    scale/opacity pair, not a layer-speed differential, so the hero never
+    detaches from the scroll. Do not "fix" this by removing it.
+  - Scroll reveals otherwise use the page's **clip-path curtain wipe** language
+    (`[data-wipe]`, product cards) and **masked word reveals** (`[data-split]`).
 - **No marquee/ticker** — removed per RH design
+  - **Approved exception — Shop by Category.** The category circles are now a
+    continuous full-bleed marquee (`.hp-cat-marquee`), 12 categories, drifting
+    left at 48s/loop. User-requested; do not "fix" it back to a static grid.
+  - Two things it depends on, which are easy to break:
+    - **Spacing is `margin-right` on each item, never a track `gap`.** With `gap`
+      the two copies are not exactly half the track each (one extra gap sits
+      between them), so `translateX(-50%)` misses the seam and the loop jumps
+      every cycle.
+    - **Full-bleed uses `100vw - var(--sbw)`, not `100vw`.** `--sbw` is the real
+      scrollbar width, measured in a `useEffect` in Homepage.tsx. Plain `100vw`
+      counts the scrollbar gutter and gives the whole page a horizontal scrollbar.
+  - It pauses on `:hover` and `:focus-within` — a moving target you cannot click
+    is hostile. The duplicated half is `aria-hidden` + `tabIndex={-1}`.
 - **No accent colour overuse** — gold only on logo + "Best sellers" link
 - **Section backgrounds alternate**: linen → taupe → espresso → linen
+  - **Landing page runs light.** The "Transform Your Home" and "Download The App"
+    panels were espresso (`#1a1512` / `#2A2018`) and read as dark holes punched
+    through the soft linen page. Both are now `--bg-warm` sandstone with espresso
+    type. Espresso is reserved for the footer, which closes the page.
+  - "Download The App" is a photo banner: its scrim is a **light linen wash**
+    (`rgba(241,237,232,0.78)`), not a dark one. If you ever flip its text back to
+    cream, the scrim has to flip with it or the copy is unreadable over the photo.
+  - Body copy on sandstone needs `rgba(26,21,18,0.85)` or darker — `0.72` measures
+    4.29:1 and fails the 4.5:1 WCAG AA floor.
 - **Hairline 1px dividers** between sections
 
 ## File Structure

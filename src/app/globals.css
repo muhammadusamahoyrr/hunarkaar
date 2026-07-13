@@ -11,6 +11,14 @@
    DESIGN TOKENS (RH.COM STYLE)
    ============================================================ */
 :root {
+  /* ---- Design tokens — single source of truth: src/styles/tokens.ts ---- */
+  --color-espresso:  #1a1512;              /* primary dark */
+  --color-linen:     #f1ede8;              /* primary light bg */
+  --color-sandstone: #c4a882;              /* warm mid */
+  --color-stone:     #6b5a48;              /* secondary text */
+  --color-brass:     #8B5E3C;              /* accent — use <5% */
+  --color-border:    rgba(26,21,18,0.12);  /* hairline only */
+
   /* RH Editorial Palette */
   --bg-light:       #f1ede8; /* linen / parchment */
   --bg-warm:        #b5a08a;  /* warm sandstone / taupe */
@@ -59,6 +67,7 @@
   --ease-in-out:    cubic-bezier(0.45, 0, 0.55, 1);
   --transition:     all 0.45s var(--ease-out);
   --transition-fast:all 0.22s ease;
+
 }
 
 /* Panel alternating blocks — color flows to all children via inherit */
@@ -85,6 +94,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  border-radius: 0; /* design system: sharp corners are the global default */
 }
 
 html {
@@ -1296,6 +1306,84 @@ button.nav-category-link.nav-active::after { left: 0; right: 0; }
 }
 
 /* ============================================================
+   TRUST BAR — COD / returns / delivery / authenticity (PK market)
+   RH-aligned: linen ground, hairline dividers, sharp corners
+   ============================================================ */
+.trust-bar {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  background: var(--bg-light);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex: 1 1 0;
+  min-width: 210px;
+  padding: 1.15rem 2rem;
+  border-right: 1px solid var(--border);
+}
+.trust-item:last-child { border-right: none; }
+
+.trust-item i {
+  font-size: 1.15rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.trust-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.trust-title {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.trust-sub {
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+}
+
+/* Tablet — 2×2 grid */
+@media (max-width: 760px) {
+  .trust-item {
+    flex: 1 1 50%;
+    min-width: 0;
+    padding: 0.95rem 1rem;
+  }
+  .trust-item:nth-child(2) { border-right: none; }
+  .trust-item:nth-child(1),
+  .trust-item:nth-child(2) { border-bottom: 1px solid var(--border); }
+}
+
+/* Phone — single stacked column, left-aligned */
+@media (max-width: 430px) {
+  .trust-item {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    padding: 0.85rem 8%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .trust-item:last-child { border-bottom: none; }
+}
+
+/* ============================================================
    BUTTONS
    ============================================================ */
 .btn-gold {
@@ -1709,7 +1797,7 @@ button.nav-category-link.nav-active::after { left: 0; right: 0; }
 }
 
 .patrons-headline {
-  font-family: var(--font-playfair);
+  font-family: var(--font-display);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2809,11 +2897,10 @@ footer {
    RESPONSIVE — Mobile (≤ 768px)
    ============================================================ */
 @media (max-width: 768px) {
-  .header-top-bar { padding: 0 1.5rem; }
-
-  .header-left .currency-toggle { display: none; }
-
-  .logo { font-size: 1.6rem; letter-spacing: 0.15em; }
+  /* Header responsiveness is consolidated in the LANDING PAGE HEADER block at
+     the end of this file. The rule that used to live here targeted
+     `.header-left .currency-toggle` — but the toggle sits in `.header-right`,
+     so it never matched anything. */
 
   #heritage-grid { padding: 6rem 1.5rem; }
 
@@ -5036,6 +5123,1832 @@ footer {
 @media (max-width: 540px) {
   .shop-grid { grid-template-columns: repeat(2, 1fr); column-gap: 0.75rem; row-gap: 1.5rem; }
   .shop-title-tabs { display: none; }
+}
+
+/* ============================================================
+   POLISHED PREMIUM ANIMATIONS (ZENTRY / LENIS INSPIRED)
+   ============================================================ */
+
+/* 1. Clip-path Morphing Banner (Bespoke Commissions) */
+.clip-path-banner-container {
+  position: relative;
+  width: 100%;
+  background: var(--bg-dark);
+  padding: 100px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.clip-path-banner {
+  position: relative;
+  width: 90%;
+  max-width: 1400px;
+  height: 60vh;
+  min-height: 480px;
+  overflow: hidden;
+  clip-path: polygon(8% 8%, 92% 8%, 92% 92%, 8% 92%);
+  border-radius: 20px;
+  transition: border-radius 0.1s linear;
+}
+
+.clip-path-banner.full-screen {
+  border-radius: 0px;
+}
+
+.clip-path-banner-inner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 10%;
+  z-index: 2;
+}
+
+.clip-path-banner-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.28;
+  transform: scale(1.1);
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.clip-path-banner-container:hover .clip-path-banner-media {
+  transform: scale(1.03);
+}
+
+.clip-path-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(26, 21, 18, 0.4) 0%, rgba(26, 21, 18, 0.9) 100%);
+  z-index: 1;
+}
+
+/* 2. Character/Word split animation */
+.split-reveal {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.split-reveal span {
+  display: inline-block;
+  transform: translateY(110%);
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.split-reveal.active span {
+  transform: translateY(0);
+}
+
+/* 3. 3D Tilt Cards */
+.tilt-card-wrap {
+  perspective: 1000px;
+}
+
+.tilt-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.tilt-card:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.tilt-card-inner {
+  transform: translateZ(15px);
+  transform-style: preserve-3d;
+}
+
+/* 4. Sliding Toggle capsule styling */
+.premium-toggle-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(44, 37, 32, 0.04);
+  border: 1px solid rgba(44, 37, 32, 0.08);
+  padding: 3px;
+  height: 32px;
+  width: 120px;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.premium-toggle-container:hover {
+  border-color: rgba(184, 147, 90, 0.4);
+}
+
+.premium-toggle-active-bg {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  background: var(--text-primary);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-toggle-container.pkr-selected .premium-toggle-active-bg {
+  transform: translateX(100%);
+}
+
+.premium-toggle-btn {
+  flex: 1;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+
+.premium-toggle-btn.active {
+  color: var(--bg-light);
+}
+
+/* 5. Bento Grid Layout (Instagram section) */
+.insta-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 280px;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.bento-item-vertical {
+  grid-row: span 2;
+  height: 580px;
+}
+
+.bento-item-wide {
+  grid-column: span 2;
+}
+
+.insta-bento-item {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-dark);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.insta-bento-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.insta-bento-item:hover img {
+  transform: scale(1.05);
+}
+
+/* 6. Footer Link Hover Underlines */
+.footer-links a, .footer-bottom a {
+  position: relative;
+  display: inline-block;
+}
+
+.footer-links a::after, .footer-bottom a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-links a:hover::after, .footer-bottom a:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+/* 7. General Smooth Text Reveals */
+.reveal-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+
+.reveal-inner {
+  display: inline-block;
+  transform: translateY(100%);
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-wrapper.active .reveal-inner {
+  transform: translateY(0);
+}
+
+
+/* ============================================================
+   HERITAGE CRAFTS HORIZONTAL SCROLL SHOWCASE (LENIS INSPIRED)
+   ============================================================ */
+.heritage-scroll-section {
+  position: relative;
+  height: 350vh; /* gives scrolling depth on desktop */
+  overflow: visible;
+  background-color: var(--bg-dark);
+  border-bottom: 1px solid var(--border-on-dark);
+}
+
+.horizontal-sticky-wrap {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.horizontal-track {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4.5rem;
+  padding: 0 8vw 0 10vw;
+  will-change: transform;
+}
+
+/* Intro Text Card */
+.horizontal-card.intro-card {
+  width: 420px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Category Cards */
+.horizontal-card.category-card-item {
+  width: 380px;
+  height: 520px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.horizontal-card-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #241d1a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Image container with scale for parallax & hover zoom */
+.horizontal-card-img {
+  will-change: transform;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+  filter: brightness(0.9) contrast(0.95);
+}
+
+/* Dark elegant gradient overlay for text readability */
+.horizontal-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(15, 12, 10, 0.95) 0%,
+    rgba(15, 12, 10, 0.6) 35%,
+    rgba(15, 12, 10, 0.1) 70%,
+    transparent 100%
+  );
+  z-index: 1;
+}
+
+/* Floating number & origin badge */
+.horizontal-card-badge {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  z-index: 2;
+  font-family: var(--font-body);
+}
+
+.horizontal-card-badge .card-number {
+  font-size: 1.8rem;
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.horizontal-card-badge .card-prov {
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(241, 237, 232, 0.5);
+}
+
+/* Content overlays */
+.horizontal-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2.5rem 2rem 2.2rem;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.horizontal-card-tag {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  margin-bottom: 0.5rem;
+}
+
+.horizontal-card-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--text-on-dark);
+  margin-bottom: 1.2rem;
+  text-transform: none;
+  font-weight: 300;
+}
+
+.horizontal-card-cta {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-on-dark);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 0.7;
+  transition: opacity 0.3s ease, gap 0.3s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 4px;
+}
+
+/* Hover effects */
+.horizontal-card.category-card-item:hover .horizontal-card-img {
+  filter: brightness(1) contrast(1) !important;
+  transform: scale(1.1) !important;
+}
+
+.horizontal-card.category-card-item:hover .horizontal-card-cta {
+  opacity: 1 !important;
+  gap: 0.9rem !important;
+  color: var(--gold-light) !important;
+  border-color: var(--gold-light) !important;
+}
+
+.horizontal-card.category-card-item:hover .horizontal-card-img-wrap {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Responsive styles for tablets and mobiles */
+@media (max-width: 991px) {
+  .heritage-scroll-section {
+    height: auto;
+    padding: 6rem 1.5rem;
+    overflow-x: hidden;
+  }
+  
+  .horizontal-sticky-wrap {
+    position: relative;
+    height: auto;
+    width: 100%;
+    overflow: visible;
+  }
+  
+  .horizontal-track {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 2rem;
+    padding: 0 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    width: 100vw;
+    margin-left: -1.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  
+  .horizontal-card.intro-card {
+    width: 280px;
+    scroll-snap-align: start;
+  }
+  
+  .horizontal-card.category-card-item {
+    width: 290px;
+    height: 420px;
+    scroll-snap-align: start;
+  }
+  
+  .horizontal-card-img-parallax {
+    width: 100% !important;
+    left: 0 !important;
+    position: relative !important;
+    transform: none !important;
+  }
+
+  .horizontal-card-img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .horizontal-card-badge {
+    top: 1.5rem;
+    left: 1.5rem;
+  }
+
+  .horizontal-card-content {
+    padding: 1.8rem 1.5rem;
+  }
+
+  .horizontal-card-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+}
+
+/* ============================================================
+   NEW EDITORIAL BLOCK — Shop by Category → Download the App
+   Ported from the Maison reference design, restyled to the
+   Hunarkar system: Cormorant/Jost, sharp corners, no filled
+   buttons (underlined .cta-link), alternating panel backgrounds,
+   hairline dividers, fade-in on scroll (no parallax).
+   ============================================================ */
+.hk-section {
+  padding: 100px 8%;
+  border-bottom: 1px solid var(--border);
+}
+
+/* .hk-fade is a pure GSAP hook — the from-state is applied at
+   runtime so content stays visible if JS is disabled. */
+
+.hk-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+/* ---- Shop by Category ---- */
+.hk-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.6rem;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.hk-cat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.hk-cat-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+}
+
+.hk-cat-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s var(--ease-out);
+}
+
+.hk-cat-item:hover .hk-cat-img img {
+  transform: scale(1.06);
+}
+
+.hk-cat-name {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+/* ---- Editorial Hero (Discover…) ---- */
+.hk-edhero {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.hk-edhero-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.hk-edhero-side {
+  width: 132px;
+  height: 172px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+}
+
+.hk-edhero-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hk-edhero-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.2rem, 4.6vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: inherit;
+}
+
+.hk-edhero-title em {
+  font-style: italic;
+}
+
+.hk-edhero-desc {
+  max-width: 560px;
+  margin: 1.8rem auto 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.2vw, 1.12rem);
+  line-height: 1.8;
+  color: inherit;
+  opacity: 0.75;
+}
+
+/* fanned trio of room scenes */
+.hk-fan {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-top: 4.5rem;
+}
+
+.hk-fan-img {
+  overflow: hidden;
+  background: var(--bg-mid);
+  border: 1px solid var(--border);
+}
+
+.hk-fan-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hk-fan-1 {
+  width: 340px;
+  height: 250px;
+  transform: rotate(-6deg) translateY(22px);
+  z-index: 1;
+}
+
+.hk-fan-2 {
+  width: 400px;
+  height: 290px;
+  margin: 0 -20px;
+  z-index: 3;
+  box-shadow: 0 34px 64px -34px rgba(44, 37, 32, 0.45);
+}
+
+.hk-fan-3 {
+  width: 340px;
+  height: 250px;
+  transform: rotate(6deg) translateY(22px);
+  z-index: 1;
+}
+
+/* ---- Popular Products ---- */
+.hk-viewall {
+  display: flex;
+  justify-content: center;
+  margin-top: 3.5rem;
+}
+
+/* ---- Transform Your Home (espresso) ---- */
+.hk-transform {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 3.5rem;
+}
+
+.hk-transform-text {
+  flex: 1;
+}
+
+.hk-transform-imgs {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+}
+
+.hk-transform-imgs > div {
+  flex: 1;
+  height: 300px;
+  overflow: hidden;
+  background: #2a2018;
+  border: 1px solid var(--border-on-dark);
+}
+
+.hk-transform-imgs > div:nth-child(2) {
+  transform: translateY(-18px);
+}
+
+.hk-transform-imgs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- Summer Sale (sandstone) split ---- */
+.hk-sale {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: flex;
+  align-items: stretch;
+  min-height: 340px;
+  border: 1px solid var(--border);
+}
+
+.hk-sale-text {
+  flex: 1;
+  padding: 3.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hk-sale-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+.hk-sale-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.8rem;
+  color: inherit;
+}
+
+.hk-sale-sub {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  opacity: 0.8;
+  margin-bottom: 2rem;
+}
+
+.hk-sale-img {
+  flex: 1;
+  overflow: hidden;
+  background: var(--bg-mid);
+}
+
+.hk-sale-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- Download the App (espresso image banner) ---- */
+.hk-app {
+  position: relative;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.hk-app-bg {
+  position: absolute;
+  inset: 0;
+}
+
+.hk-app-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hk-app-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 21, 18, 0.62);
+}
+
+.hk-app-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 4rem 8%;
+  max-width: 660px;
+  color: var(--text-on-dark);
+}
+
+.hk-app-desc {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.2vw, 1.12rem);
+  line-height: 1.8;
+  opacity: 0.85;
+  margin: 1.2rem auto 2.2rem;
+}
+
+.hk-app-ctas {
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1100px) {
+  .hk-cat-grid { grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+  .hk-transform { flex-direction: column; gap: 2.5rem; }
+  .hk-transform-text, .hk-transform-imgs { width: 100%; }
+}
+
+@media (max-width: 768px) {
+  .hk-section { padding: 70px 6%; }
+  .hk-edhero-side { width: 90px; height: 120px; }
+  .hk-edhero-top { gap: 1.2rem; }
+  .hk-fan { flex-direction: column; align-items: center; gap: 1.2rem; margin-top: 3rem; }
+  .hk-fan-1, .hk-fan-2, .hk-fan-3 {
+    width: min(90%, 400px);
+    height: auto;
+    aspect-ratio: 4 / 3;
+    transform: none;
+    margin: 0;
+  }
+  .hk-sale { flex-direction: column; }
+  .hk-sale-img { min-height: 240px; }
+  .hk-transform-imgs > div { height: 220px; }
+  .hk-app-ctas { flex-direction: column; align-items: center; gap: 1.4rem; }
+}
+
+@media (max-width: 480px) {
+  .hk-cat-grid { grid-template-columns: repeat(2, 1fr); }
+  .hk-sale-text { padding: 2.4rem 1.8rem; }
+}
+
+/* ============================================================
+   LANDING PAGE RESPONSIVE GRIDS
+   Lifted out of inline style={{}} props in Homepage.tsx. Inline
+   styles cannot be targeted by media queries, so these grids had
+   no mobile behaviour available to them at all: the category row
+   held six fixed 134px circles (904px of content) and clipped
+   below ~980px.
+
+   Desktop values are byte-identical to the inline styles they
+   replaced — only the sub-1024px behaviour is new.
+   ============================================================ */
+
+/* ---- Shop by Category ---- */
+.hp-category-section {
+  max-width: 1240px;
+  margin: 0 auto;
+  /* top was 70px — too much air between the dark "Shop the Room" band and the
+     heading, since the h2's own line-height already adds leading above the caps */
+  padding: 36px 40px 20px;
+}
+
+/* ---- Shop by Category — continuous marquee ----
+   NOTE: design.md said "no marquee/ticker". This is a deliberate,
+   user-approved exception; see CLAUDE.md. */
+.hp-cat-marquee {
+  position: relative;
+  overflow: hidden;
+
+  /* The circles sit flush against this box's top edge, so the :hover scale(1.06)
+     grew them ~4px past it and overflow:hidden sheared the tops off. The padding
+     opens headroom inside the clip box (overflow clips at the padding edge, so
+     content may paint into it); the equal negative margin cancels it out, leaving
+     the layout exactly where it was. */
+  padding-block: 12px;
+  margin-block: -12px;
+
+  /* Break out of the section's 1240px cap so the strip runs edge-to-edge and
+     more categories are on screen at once. Uses 100% (of the section) rather
+     than 100vw: 100vw includes the scrollbar gutter and would push the page
+     into a horizontal scroll. */
+  margin-inline: calc(50% - 50vw + var(--sbw, 0px) / 2);
+  width: calc(100vw - var(--sbw, 0px));
+
+  /* items drift in and out of a soft edge instead of popping at a hard cut */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+}
+
+.hp-cat-track {
+  display: flex;
+  width: max-content;
+  animation: hp-cat-scroll 48s linear infinite;
+  will-change: transform;
+}
+
+/* Spacing is a per-item margin, NOT a track `gap`. With `gap`, the two copies
+   are not exactly half the track each — there is one extra gap between them —
+   so translateX(-50%) undershoots and the loop visibly jumps a little further
+   every cycle. A margin on each item keeps both halves exactly equal, so -50%
+   lands precisely on the start of the duplicate. */
+.hp-cat-item {
+  flex: 0 0 auto;
+  width: 134px;
+  margin-right: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+@keyframes hp-cat-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* A moving target you cannot click is hostile — freeze it on hover, and on
+   keyboard focus so tab-through works too. */
+.hp-cat-marquee:hover .hp-cat-track,
+.hp-cat-marquee:focus-within .hp-cat-track {
+  animation-play-state: paused;
+}
+
+.hp-cat-circle {
+  position: relative;
+  width: 134px;
+  height: 134px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #EDE3D3;
+  border: 1px solid var(--color-border);
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hp-cat-item:hover .hp-cat-circle { transform: scale(1.06); }
+
+.hp-cat-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #3A342E;
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .hp-cat-item { width: 104px; margin-right: 28px; }
+  .hp-cat-circle { width: 104px; height: 104px; }
+  .hp-cat-label { font-size: 13px; }
+  .hp-cat-track { animation-duration: 36s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Stop the drift, but keep the categories reachable — the strip becomes a
+     normal horizontal scroller rather than a dead, half-cropped row. */
+  .hp-cat-track { animation: none; }
+  .hp-cat-marquee { overflow-x: auto; }
+}
+
+/* ---- Popular Products ---- */
+.hp-product-section {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 90px 40px 40px;
+}
+
+/* Row-gap is deliberately larger than column-gap: each card carries a caption
+   under its image, so an equal 26px gap would let row 2's images crowd row 1's
+   price line. */
+.hp-product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 26px;
+  row-gap: 56px;
+}
+
+@media (max-width: 1024px) {
+  .hp-category-section { padding: 30px 24px 20px; }
+  /* the category grid is gone — it is a marquee now, which needs no
+     column breakpoints, only the item-size change at 560px */
+
+  .hp-product-section { padding: 70px 24px 32px; }
+  /* shorthand `gap` here would clobber the 56px row-gap above — and at 2 cols
+     eight products means four rows, so the row spacing matters more, not less */
+  .hp-product-grid { grid-template-columns: repeat(2, 1fr); column-gap: 22px; row-gap: 46px; }
+}
+
+@media (max-width: 560px) {
+  .hp-category-section { padding: 26px 18px 16px; }
+
+  .hp-product-section { padding: 56px 18px 28px; }
+  .hp-product-grid { column-gap: 14px; row-gap: 38px; }
+}
+
+/* ============================================================
+   LANDING PAGE HEADER — responsive
+   The top bar is three flex:1 columns (left icons | logo | right
+   actions). "HUNARKAR" cannot wrap, so once the right cluster
+   outgrows its third of the bar the logo overflows its box and
+   collides with the PKR/USD toggle. Nothing guarded against this
+   between 768px and 1100px, so the collision started at ~900px.
+
+   Desktop (>1100px) is untouched.
+   ============================================================ */
+@media (max-width: 1100px) {
+  /* min-width:0 lets the flex columns shrink below their content
+     width instead of pushing into each other. */
+  .header-left,
+  .header-right,
+  .header-logo-wrap { min-width: 0; }
+
+  /* The logo's "unarkar" is italic, and italic glyphs lean past the
+     right edge of their inline box — so touching boxes still render as
+     overlapping letters. A real gap keeps the glyphs apart regardless
+     of what the measured boxes say. */
+  .header-top-bar { padding: 0 1.5rem; gap: 14px; }
+  .header-left { gap: 1.25rem; }
+  .header-right { gap: 1.1rem; }
+  .logo { font-size: 1.55rem; letter-spacing: 0.2em; white-space: nowrap; }
+}
+
+@media (max-width: 860px) {
+  /* Bespoke enquiry stays reachable from the hamburger menu, so the
+     text link is the right thing to drop first — it is the widest
+     item in the right cluster. */
+  .header-interior-design { display: none; }
+
+  .header-left { gap: 0.75rem; }
+  .header-right { gap: 0.9rem; }
+  .header-icon-btn { width: 36px; height: 36px; font-size: 1rem; }
+  .logo { font-size: 1.35rem; letter-spacing: 0.16em; }
+}
+
+@media (max-width: 560px) {
+  .header-top-bar { padding: 0 0.9rem; gap: 10px; }
+  .header-left { gap: 0.25rem; }
+  .header-right { gap: 0.5rem; }
+  .header-icon-btn { width: 32px; height: 32px; font-size: 0.95rem; }
+  .logo { font-size: 1.05rem; letter-spacing: 0.08em; }
+  .currency-toggle { font-size: 0.62rem; letter-spacing: 0.06em; gap: 0.25rem; }
+}
+
+/* Small Android / iPhone SE class widths — the three clusters simply
+   cannot all breathe at 1.05rem, so the wordmark gives up the space. */
+@media (max-width: 430px) {
+  .header-top-bar { padding: 0 0.7rem; gap: 8px; }
+  .header-icon-btn { width: 30px; height: 30px; font-size: 0.9rem; }
+  .logo { font-size: 0.92rem; letter-spacing: 0.05em; }
+  .currency-toggle { font-size: 0.58rem; letter-spacing: 0.04em; gap: 0.2rem; }
+}
+
+/* ============================================================
+   TRANSFORM YOUR HOME — dark accent panel
+   ReactImageSlot carries aspect-ratio:3/2. Inside a 280px-tall
+   flex item that transfers a 420px min-content width, and flex
+   items default to min-width:auto — so the three slots demanded
+   1292px inside a 1160px panel and the third was clipped away by
+   the panel's overflow:hidden. This was broken at desktop too,
+   not just on mobile.
+
+   min-width:0 drops the transferred minimum so the slots size
+   from flex-basis as intended.
+   ============================================================ */
+.hp-transform-section {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 70px 40px 20px;
+}
+
+/* Warm sandstone/taupe rather than the old near-black espresso — the panel
+   now sits *within* the soft linen page instead of punching a dark hole in
+   it. Uses the --bg-warm token the palette already defined for this exact
+   "warm mid" step. Text inverts to espresso; the CTA inverts with it. */
+.hp-transform-panel {
+  background: var(--bg-warm);
+  border-radius: 26px;
+  padding: 52px 56px;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  overflow: hidden;
+}
+
+/* The two commercial panels get their own voice: Jost light in wide-tracked
+   caps. This is a deliberate exception to "Cormorant for all display headings"
+   — the promo panels read as contemporary against the editorial serif elsewhere.
+   See CLAUDE.md.
+
+   Caps + open tracking runs WIDE, and this column is only ~44% of the panel, so
+   the size is pulled well below the mixed-case scale. Weight 400, not 300: on
+   sandstone a 300 geometric stroke goes weak against the mid-tone. */
+.hp-transform-title {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.3vw, 2rem);
+  line-height: 1.3;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-espresso);
+}
+
+/* 0.72 alpha measured 4.29:1 against the sandstone — under the 4.5:1 WCAG AA
+   floor for body text. 0.85 clears it. */
+.hp-transform-desc {
+  max-width: 340px;
+  margin: 20px 0 32px;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.7;
+  color: rgba(26, 21, 18, 0.85);
+}
+
+.hp-transform-cta {
+  background: var(--color-espresso);
+  color: var(--color-linen);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 26px;
+  border-radius: 100px;
+  width: max-content;
+}
+
+.hp-transform-text { flex: 0 1 44%; min-width: 0; }
+
+/* Was three equal flex columns, which resolved to 156px-wide slots at a 0.56
+   aspect — too narrow to be compositions, just vertical strips cut out of the
+   photographs. This is an asymmetric editorial collage instead: a tall hero
+   image spanning both rows, with two landscape crops stacked beside it. Every
+   slot now gets a shape the photograph can actually live in. */
+.hp-transform-imgs {
+  flex: 1 1 56%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 16px;
+  height: 340px;
+}
+
+.hp-transform-slot:first-child { grid-row: 1 / span 2; }
+
+/* Tobacco is the load state behind the photograph, so the slot never flashes
+   as an empty light box. position:relative anchors the <Image fill>.
+
+   The hover affordance is box-shadow ONLY. GSAP owns `transform` on these
+   slots for the pinned slide-in, so a CSS transform transition here would be
+   re-interpolating every frame GSAP writes — the same two-owners-one-property
+   bug that flattened the middle card and stuck the CTA earlier. */
+.hp-transform-slot {
+  position: relative;
+  min-width: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #8a6f4e;
+  box-shadow: 0 10px 26px -14px rgba(26, 21, 18, 0.45);
+  transition: box-shadow 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hp-transform-slot:hover {
+  box-shadow: 0 20px 40px -14px rgba(26, 21, 18, 0.55);
+}
+
+@media (max-width: 900px) {
+  .hp-transform-panel {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 36px;
+    padding: 44px 32px;
+  }
+  /* the collage holds up stacked — it just gets shorter */
+  .hp-transform-text { flex: 1 1 auto; width: 100%; }
+  .hp-transform-imgs { flex: 1 1 auto; width: 100%; height: 300px; }
+}
+
+@media (max-width: 560px) {
+  .hp-transform-section { padding: 48px 18px 16px; }
+  .hp-transform-panel { padding: 32px 20px; border-radius: 18px; gap: 28px; }
+  .hp-transform-imgs { height: 220px; gap: 10px; }
+  .hp-transform-slot { border-radius: 12px; }
+}
+
+/* ============================================================
+   SUMMER SALE — split banner
+   Same defect as the Transform panel: a flex row that never
+   stacked. The text column's min-content width won, squeezing the
+   image column down to 47px at 390px wide. min-width:0 lets both
+   columns shrink, and below 900px the panel stacks so the image
+   gets a real height instead of a sliver.
+   ============================================================ */
+.hp-sale-section {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 34px 40px 90px;
+}
+
+.hp-sale-panel {
+  background: var(--color-linen);
+  border-radius: 26px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  min-height: 320px;
+  position: relative;
+}
+
+.hp-sale-text {
+  flex: 1;
+  min-width: 0;
+  padding: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* Jost light caps, matching .hp-transform-title. Weight 300 here — this one sits
+   on linen, where the thin stroke holds; the sandstone panel needs 400. */
+.hp-sale-title {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(1.6rem, 2.9vw, 2.5rem);
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-espresso);
+  margin: 10px 0 14px;
+}
+
+.hp-sale-btn {
+  width: max-content;
+  margin-top: 30px;
+  background: var(--color-espresso);
+  color: #F7F0E6;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px 30px;
+  border-radius: 100px;
+}
+
+.hp-sale-img {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background: #E4D3B9;
+}
+
+@media (max-width: 900px) {
+  .hp-sale-panel { flex-direction: column; min-height: 0; }
+  .hp-sale-text { padding: 44px 32px; }
+  .hp-sale-title { font-size: 42px; }
+  .hp-sale-img { width: 100%; min-height: 240px; }
+}
+
+@media (max-width: 560px) {
+  .hp-sale-section { padding: 24px 18px 56px; }
+  .hp-sale-panel { border-radius: 18px; }
+  .hp-sale-text { padding: 32px 22px; }
+  .hp-sale-title { font-size: 34px; letter-spacing: -0.5px; }
+  .hp-sale-btn { margin-top: 24px; padding: 13px 26px; }
+  .hp-sale-img { min-height: 190px; }
+}
+
+/* ============================================================
+   DOWNLOAD THE APP — image banner
+   Different bug from the others: nothing here overflowed. The
+   panel is a fixed 340px box with the copy absolutely positioned
+   inside it, and the two pill buttons had no white-space:nowrap —
+   so at 360px "App Store" wrapped to two lines *inside* its pill
+   and the buttons grew to 67px tall.
+
+   nowrap keeps each label on one line, flex-wrap lets the pair
+   stack instead of compressing, and the panel takes its height
+   from the content on mobile rather than clipping it.
+   ============================================================ */
+.hp-app-section {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 34px 40px 70px;
+}
+
+/* Retoned to match the Transform panel. This one is a photo banner, so the
+   scrim had to invert with it: it was a dark wash (holding up cream text)
+   and is now a warm linen wash (holding up espresso text). Flipping the
+   text without flipping the scrim would have left it unreadable over the
+   photograph. */
+.hp-app-panel {
+  position: relative;
+  height: 340px;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--bg-warm);
+}
+
+.hp-app-media {
+  position: absolute;
+  inset: 0;
+  animation: kb 20s ease-in-out infinite alternate;
+}
+
+.hp-app-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(241, 237, 232, 0.78);
+  pointer-events: none;
+}
+
+.hp-app-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 40px;
+  pointer-events: none;
+}
+
+/* already Cormorant, but 600/-0.5px was heavy and tight for a serif */
+.hp-app-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+  color: var(--color-espresso);
+}
+
+.hp-app-desc {
+  max-width: 560px;
+  margin: 16px 0 30px;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.7;
+  color: rgba(26, 21, 18, 0.75);
+}
+
+.hp-app-btns {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.hp-app-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 13px 26px;
+  border-radius: 100px;
+  cursor: pointer;
+  white-space: nowrap; /* keeps the label on one line inside the pill */
+}
+
+.hp-app-btn--primary {
+  background: var(--color-espresso);
+  color: var(--color-linen);
+}
+
+.hp-app-btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(26, 21, 18, 0.45);
+  color: var(--color-espresso);
+}
+
+@media (max-width: 900px) {
+  /* height:auto + a static content flow, so the copy can never be
+     clipped by the fixed 340px box */
+  .hp-app-panel { height: auto; min-height: 320px; }
+  .hp-app-content { position: relative; inset: auto; padding: 52px 32px; }
+  .hp-app-title { font-size: 34px; }
+}
+
+@media (max-width: 560px) {
+  .hp-app-section { padding: 24px 18px 56px; }
+  .hp-app-panel { border-radius: 18px; min-height: 280px; }
+  .hp-app-content { padding: 44px 22px; }
+  .hp-app-title { font-size: 27px; }
+  .hp-app-desc { font-size: 14px; margin: 12px 0 24px; }
+  .hp-app-btn { padding: 12px 20px; font-size: 13px; }
+}
+
+/* ============================================================
+   POPULAR PRODUCTS — card interaction
+
+   Layer ownership (this matters — the previous version had GSAP and
+   the mousemove handler both writing transform on the same node):
+
+     .hk-product-card   → GSAP scroll reveal owns `transform`
+     .pc-tilt           → gsap.quickTo owns `transform` (3D tilt)
+     .pc-img-inner      → GSAP owns `clip-path` + `scale` (curtain wipe)
+     .product-card-img  → CSS owns `transform` (hover zoom + parallax)
+
+   Nothing animates a property two owners deep, so nothing fights.
+   Only transform / opacity / clip-path are animated — all
+   compositor-friendly. No blur filters over full-size bitmaps.
+   ============================================================ */
+.hk-product-card {
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+  opacity: 0;                 /* GSAP reveals this */
+  perspective: 1000px;        /* gives the inner tilt its depth */
+}
+
+.pc-tilt {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.product-image-container {
+  position: relative;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #F3ECE0;
+  transform-style: preserve-3d;
+  box-shadow: 0 1px 2px rgba(26, 21, 18, 0.04);
+  transition: box-shadow 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hk-product-card:hover .product-image-container {
+  box-shadow: 0 22px 48px -18px rgba(26, 21, 18, 0.32);
+}
+
+/* Masked wipe target. Also clips the image's hover zoom. */
+.pc-img-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: clip-path, transform;
+}
+
+/* Hover zoom + a counter-parallax drift driven by --px/--py, which the
+   mousemove handler sets. The image slides *against* the tilt, which is
+   what sells the depth. */
+.product-card-img {
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hk-product-card:hover .product-card-img {
+  transform: translate3d(var(--px, 0px), var(--py, 0px), 0) scale(1.07);
+}
+
+/* Specular sheen — a soft highlight that tracks the cursor across the
+   image, plus a diagonal gloss sweep on enter. Pure paint, no layout. */
+.pc-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  background:
+    radial-gradient(
+      circle at var(--mx, 50%) var(--my, 50%),
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.08) 30%,
+      rgba(255, 255, 255, 0) 60%
+    );
+  mix-blend-mode: soft-light;
+  transform: translateZ(4px);
+}
+
+.hk-product-card:hover .pc-sheen { opacity: 1; }
+
+/* Quick View */
+.quick-view-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 21, 18, 0.14);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  transform: translateZ(8px);
+}
+
+.hk-product-card:hover .quick-view-overlay { opacity: 1; }
+
+.pc-quickview-pill {
+  background: #ffffff;
+  color: var(--color-espresso);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 100px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(10px);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.4s ease;
+  transition-delay: 0.06s;
+}
+
+.hk-product-card:hover .pc-quickview-pill {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Wishlist */
+.pc-wishlist {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: var(--color-espresso);
+  cursor: pointer;
+  z-index: 5;
+  transform: translateZ(25px) translateY(-6px);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+              opacity 0.35s ease,
+              background-color 0.25s ease,
+              color 0.25s ease;
+}
+
+.hk-product-card:hover .pc-wishlist {
+  transform: translateZ(25px) translateY(0);
+  opacity: 1;
+}
+
+/* Once saved, the heart stays visible whether or not you're hovering. */
+.pc-wishlist.active {
+  opacity: 1;
+  transform: translateZ(25px) translateY(0);
+  color: #e05e5e;
+}
+
+.pc-wishlist:hover { background: #ffffff; }
+
+@keyframes heart-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.32); }
+  100% { transform: scale(1); }
+}
+
+.pc-wishlist.active i {
+  animation: heart-pulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* Meta — GSAP ladders these up on reveal; the name gets a gold underline
+   that wipes in from the left on hover. */
+.pc-meta { padding: 4px 2px 0; }
+
+.pc-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #b8935a;
+  margin-bottom: 6px;
+}
+
+.pc-name {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-espresso);
+}
+
+.pc-name::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: #b8935a;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hk-product-card:hover .pc-name::after { transform: scaleX(1); }
+
+.pc-price {
+  font-size: 15px;
+  font-weight: 500;
+  color: #6E655B;
+  margin-top: 6px;
+  transition: color 0.4s ease;
+}
+
+.hk-product-card:hover .pc-price { color: var(--color-espresso); }
+
+/* Touch devices get no tilt and no hover-gated affordances — the wishlist
+   and price must be reachable without a pointer. */
+@media (hover: none) {
+  .pc-wishlist { opacity: 1; transform: translateY(0); }
+  .pc-sheen { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hk-product-card,
+  .pc-tilt,
+  .pc-img-inner,
+  .product-card-img,
+  .pc-sheen,
+  .quick-view-overlay,
+  .pc-quickview-pill,
+  .pc-wishlist,
+  .pc-name::after,
+  .pc-price {
+    transition: none !important;
+    animation: none !important;
+  }
+  .hk-product-card { opacity: 1; }
+  .pc-wishlist { opacity: 1; transform: none; }
+  .pc-sheen { display: none; }
+}
+
+/* ============================================================
+   SCROLL PROGRESS — hairline gold rule
+   Sits above the header. Scrubbed by GSAP against Lenis's eased
+   scroll, so it glides rather than stepping. scaleX only — the
+   compositor handles it, no layout or paint per frame.
+   ============================================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 960;          /* above #site-header (900) */
+  pointer-events: none;
+  background: transparent;
+}
+
+.scroll-progress-bar {
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, rgba(184, 147, 90, 0.35), var(--gold) 65%, #d9b87c);
+  will-change: transform;
+}
+
+/* ============================================================
+   MASKED HEADING REVEAL
+   Each word sits in its own overflow-hidden box, so GSAP can slide
+   it up from behind its own baseline. The padding/margin pair gives
+   descenders (g, y, p) room to render — without it the mask shears
+   the bottom off the glyphs.
+   ============================================================ */
+.sr-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.sr-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress { display: none; }
+  .sr-word { overflow: visible; }
+  .sr-inner { transform: none !important; }
+}
+
+/* ============================================================
+   HERO — scroll dim scrim
+   Sits above .hero-overlay (z-index 2) and below the header (900).
+   Starts fully transparent; GSAP scrubs it in as the hero scrolls
+   away. Kept separate from .hero-overlay so that gradient — which is
+   tuned around the images' baked-in text — is never touched.
+   ============================================================ */
+.hero-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--bg-dark);
+  opacity: 0;
+  will-change: opacity;
+}
+
+/* The scale target. transform-origin stays centred so the dolly reads
+   as a push-in rather than a drift. */
+.hero-media-container {
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-dim { display: none; }
+  .hero-media-container { transform: none !important; }
+}
+
+/* ============================================================
+   TOASTS
+   Replaces the 18 native alert() calls. alert() blocks the main
+   thread, cannot be styled, and on a page driven by Lenis + GSAP it
+   freezes every animation mid-flight until dismissed.
+
+   z-index sits above the header (900), the mega-menu (850) and the
+   cart drawer, so a toast is never raised behind the surface that
+   triggered it.
+   ============================================================ */
+.toast-viewport {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  pointer-events: none; /* the strip itself must not eat clicks */
+}
+
+.toast {
+  pointer-events: auto; /* ...but the toasts inside it must accept them */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  max-width: min(420px, calc(100vw - 48px));
+  padding: 14px 14px 14px 16px;
+  border-radius: 10px;
+  background: var(--color-espresso);
+  color: var(--color-linen);
+  border-left: 3px solid var(--gold);
+  box-shadow: 0 18px 40px -16px rgba(26, 21, 18, 0.55);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  animation: toast-in 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.toast--success { border-left-color: #6f9c6a; }
+.toast--error   { border-left-color: #c0563f; }
+.toast--info    { border-left-color: var(--gold); }
+
+.toast-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--color-espresso);
+  background: var(--gold);
+}
+
+.toast--success .toast-icon { background: #6f9c6a; color: #0f1a0e; }
+.toast--error .toast-icon   { background: #c0563f; color: #fff; }
+
+.toast-msg {
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.toast-close {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--color-linen);
+  opacity: 0.55;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.toast-close:hover { opacity: 1; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 560px) {
+  .toast-viewport { right: 12px; left: 12px; bottom: 12px; align-items: stretch; }
+  .toast { min-width: 0; max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}
+
+/* ============================================================
+   SECTION HEADINGS — one canonical treatment
+
+   Four of the landing-page headings were Jost 700 (a heavy geometric
+   sans) at -0.5px tracking, while the rest were Cormorant. design.md
+   is explicit: Cormorant is for *all* display headings, Jost for nav,
+   labels and body. The Jost-700 headings read as a different site
+   bolted onto this one — and they were the "too bold" ones.
+
+   This mirrors the "Shop the Room" heading, which was already correct:
+   Cormorant, weight 400, generous positive tracking. Serifs want
+   letter-spacing OPEN, not tightened — the negative tracking that
+   flatters a geometric sans strangles a high-contrast serif.
+   ============================================================ */
+.hp-section-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 3.4vw, 2.9rem); /* 32 → 46px */
+  line-height: 1.12;
+  letter-spacing: 0.02em;
+  color: var(--color-espresso);
+}
+
+/* Cream-on-dark/mid needs a touch more weight to hold its stroke */
+.hp-section-heading--onWarm { font-weight: 500; }
+
+@media (max-width: 560px) {
+  .hp-section-heading { letter-spacing: 0.015em; }
+}
+
+/* The page's one h1. Was Cormorant 700 / -0.5px — a display serif at 58px
+   wants LIGHT, not bold; weight is what made it feel heavy rather than
+   editorial. 300 at this size is the RH register. */
+.hp-editorial-h1 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 4.4vw, 3.9rem);
+  line-height: 1.08;
+  letter-spacing: 0.015em;
+  color: var(--color-espresso);
+  margin: 0;
 }
 
 /* ============================================================
