@@ -54,6 +54,8 @@ const PRICE_RANGES = [
   { label: '$400+', min: 400, max: Infinity },
 ];
 
+type PriceRange = (typeof PRICE_RANGES)[number];
+
 /* ============================================================
    HELPERS
    ============================================================ */
@@ -97,7 +99,7 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
   const [sortBy, setSortBy] = useState('featured');
   const [filterOpen, setFilterOpen] = useState(false);
   const [activeMaterials, setActiveMaterials] = useState<string[]>([]);
-  const [activePriceRange, setActivePriceRange] = useState<{ min: number; max: number } | null>(null);
+  const [activePriceRange, setActivePriceRange] = useState<PriceRange | null>(null);
   const [activeTab, setActiveTab] = useState<'products' | 'collections' | 'inspiration'>('products');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -628,7 +630,7 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
             ))}
             {activePriceRange && (
               <span className="shop-chip">
-                {(activePriceRange as any).label}
+                {activePriceRange.label}
                 <button onClick={() => setActivePriceRange(null)}><i className="fa-solid fa-xmark" /></button>
               </span>
             )}
@@ -702,7 +704,9 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
                         type="checkbox"
                         checked={activePriceRange?.label === range.label}
                         onChange={() => setActivePriceRange(prev =>
-                          prev?.label === range.label ? null : { ...range } as any
+                          prev?.label === range.label
+                            ? null
+                            : { label: range.label, min: range.min, max: range.max }
                         )}
                       />
                       <span>{range.label}</span>
