@@ -140,14 +140,70 @@ export const LOCAL_PRODUCTS: LocalProduct[] = [
   },
 ];
 
+/* ============================================================
+   LIGHTING PRODUCTS — the /lighting collection. Kept out of
+   LOCAL_PRODUCTS so lamps don't leak into the furniture listings,
+   which import that array wholesale. Every image ID below was
+   content-verified in a browser (several IDs picked from memory
+   turned out to be laundromats and iPhones).
+   ============================================================ */
+const LU = (id: string) => `https://images.unsplash.com/${id}?w=800&auto=format&fit=crop&q=80`;
+
+export const LIGHTING_PRODUCTS: LocalProduct[] = [
+  {
+    id: 'lt-a', name: 'Smoked Iron Dome Pendant', category: 'Pendant', usdPrice: 145, pkrPrice: 40600,
+    img: LU('photo-1565814329452-e1efa11c5b89'),
+    gallery: [LU('photo-1565814329452-e1efa11c5b89')],
+    dimensions: 'Ø 30 × 28 cm · 1.8 m cord',
+    description: 'Hand-raised iron dome with a smoked black finish. Each hammer pass is visible in raking light.',
+    artisan: 'Mohammad Din, Rawalpindi Brass Guild',
+  },
+  {
+    id: 'lt-b', name: 'Milk-Glaze Ceramic Pendant', category: 'Pendant', usdPrice: 110, pkrPrice: 30800,
+    img: LU('photo-1513506003901-1e6a229e2d15'),
+    gallery: [LU('photo-1513506003901-1e6a229e2d15')],
+    dimensions: 'Ø 26 × 22 cm · 1.5 m cord',
+    description: 'Thrown in the Multan kiln tradition and dipped in a raw milk glaze. No two drips repeat.',
+    artisan: 'Ustad Shamil Raza, Multani Blue Art',
+  },
+  {
+    id: 'lt-c', name: 'Forged Steel Task Lamp', category: 'Table Lamp', usdPrice: 165, pkrPrice: 46200,
+    img: LU('photo-1507473885765-e6ed057f782c'),
+    gallery: [LU('photo-1507473885765-e6ed057f782c')],
+    dimensions: '18 × 40 × 55 cm · adjustable head',
+    description: 'Forged steel arm and shade with hand-cut threads. Built to sit at a desk for fifty years.',
+    artisan: 'Thathera Collective, Lahore Walled City',
+  },
+  {
+    id: 'lt-d', name: 'Camel-Skin Naqashi Table Lamp', category: 'Table Lamp', usdPrice: 130, pkrPrice: 36400,
+    img: LU('photo-1543198126-a8ad8e47fb22'),
+    gallery: [LU('photo-1543198126-a8ad8e47fb22')],
+    dimensions: 'Ø 24 × 38 cm',
+    description: 'Multan’s oldest lamp: stretched camel skin painted in naqashi florals. Unlit it is a vessel; lit, it turns amber.',
+    artisan: 'Naqash Brothers, Multan',
+  },
+  {
+    id: 'lt-e', name: 'Brass Stem Floor Lamp', category: 'Floor Lamp', usdPrice: 320, pkrPrice: 89600,
+    img: LU('photo-1586023492125-27b2c045efd7'),
+    gallery: [LU('photo-1586023492125-27b2c045efd7')],
+    dimensions: 'Ø 28 × 148 cm',
+    description: 'A single drawn brass stem on a beaten base, burnished with tamarind and ash to a soft lustre.',
+    artisan: 'Mohammad Din, Rawalpindi Brass Guild',
+  },
+];
+
+/* One pool for lookups: the PDP and related-products logic must see
+   lighting pieces too, or /shop/product/lt-a would 404. */
+const ALL_LOCAL: LocalProduct[] = [...LOCAL_PRODUCTS, ...LIGHTING_PRODUCTS];
+
 export function getLocalProductById(id: string): LocalProduct | undefined {
-  return LOCAL_PRODUCTS.find(p => p.id === id);
+  return ALL_LOCAL.find(p => p.id === id);
 }
 
 /** Related products by shared category (excluding the current one). */
 export function getRelatedLocalProducts(id: string, limit = 4): LocalProduct[] {
   const current = getLocalProductById(id);
-  const pool = LOCAL_PRODUCTS.filter(p => p.id !== id);
+  const pool = ALL_LOCAL.filter(p => p.id !== id);
   const sameCat = current ? pool.filter(p => p.category === current.category) : [];
   const rest = pool.filter(p => !sameCat.includes(p));
   return [...sameCat, ...rest].slice(0, limit);

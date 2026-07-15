@@ -3,15 +3,23 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { LOCAL_PRODUCTS } from '@/lib/localProducts';
 import type { ProductItem } from '@/lib/siteData';
+import { useCart } from '@/lib/CartContext';
+import { artisanSlugFor } from '@/lib/artisans';
 
 interface ShopPageProps {
   initialProducts: ProductItem[];
+  localProducts?: ProductItem[];
+  categoryType?: 'living' | 'dining';
+  title?: string;
+  breadcrumbLabel?: string;
+  subcategories?: Array<{ label: string; img: string; filter: string | null }>;
+  materials?: string[];
 }
 
 /* ============================================================
    NAV DATA
    ============================================================ */
-const NAV_ITEMS = [
+const DEFAULT_NAV_ITEMS = [
   { name: 'Estates' },
   { name: 'Living', active: true },
   { name: 'Dining' },
@@ -27,7 +35,7 @@ const NAV_ITEMS = [
   { name: 'Sale', extraClass: 'nav-sale' },
 ];
 
-const SUBCATEGORIES = [
+const DEFAULT_SUBCATEGORIES = [
   { label: 'All Furniture', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80', filter: null },
   { label: 'Benches', img: '/Woven Leather Bench/a1.png', filter: 'Bench' },
   { label: 'Chairs', img: '/Upholstered Wooden Slipper Chair/v1.png', filter: 'Chair' },
@@ -46,7 +54,7 @@ const SORT_OPTIONS = [
   { value: 'za', label: 'Alphabetically, Z–A' },
 ];
 
-const MATERIALS = ['Walnut Wood', 'Teak', 'Rattan', 'Leather', 'Kilim', 'Jute', 'Palm Leaf', 'Cotton'];
+const DEFAULT_MATERIALS = ['Walnut Wood', 'Teak', 'Rattan', 'Leather', 'Kilim', 'Jute', 'Palm Leaf', 'Cotton'];
 const PRICE_RANGES = [
   { label: 'Under $150', min: 0, max: 150 },
   { label: '$150 – $250', min: 150, max: 250 },
@@ -84,15 +92,44 @@ function getBadge(product: ProductItem, idx: number): string | null {
 /* ============================================================
    MAIN COMPONENT
    ============================================================ */
-export default function ShopPage({ initialProducts }: ShopPageProps) {
+export default function ShopPage({
+  initialProducts,
+  localProducts = LOCAL_PRODUCTS,
+  categoryType = 'living',
+  title = 'All Living Room',
+  breadcrumbLabel = 'Living',
+  subcategories = DEFAULT_SUBCATEGORIES,
+  materials = DEFAULT_MATERIALS,
+}: ShopPageProps) {
+  const navItems = useMemo(() => {
+    return [
+      { name: 'Estates', href: '/' },
+      { name: 'Living', active: categoryType === 'living', href: '/shop/living' },
+      { name: 'Dining', active: categoryType === 'dining', href: '/dining' },
+      { name: 'Bed', href: '/bed' },
+      { name: 'Bath', href: '/' },
+      { name: 'Outdoor', href: '/' },
+      { name: 'Lighting', href: '/lighting' },
+      { name: 'Textiles', href: '/textiles' },
+      { name: 'Rugs', href: '/' },
+      { name: 'Décor', href: '/' },
+      { name: 'Baby & Child', href: '/' },
+      { name: 'Teen', href: '/' },
+      { name: 'Sale', href: '/', extraClass: 'nav-sale' },
+    ];
+  }, [categoryType]);
   /* ---- Header state ---- */
   const [scrolled, setScrolled] = useState(true); // always solid on shop page
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [cart, setCart] = useState<(ProductItem & { quantity: number })[]>([]);
-  const [cartOpen, setCartOpen] = useState(false);
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
+
+  /* Cart is shared site-wide and persisted — see lib/CartContext. */
+  const {
+    cart, addToCart, removeFromCart, cartCount,
+    cartOpen, setCartOpen, formatPrice, getSubtotal,
+  } = useCart();
 
   /* ---- Shop state ---- */
   const [activeSubcat, setActiveSubcat] = useState<string | null>(null);
@@ -165,13 +202,13 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
   /* ---- Combined products ---- */
   const allProducts = useMemo(() => {
     const combined = [...initialProducts];
-    LOCAL_PRODUCTS.forEach(lp => {
+    localProducts.forEach(lp => {
       if (!combined.some(p => p.name.toLowerCase() === lp.name.toLowerCase())) {
         combined.push(lp);
       }
     });
     return combined;
-  }, [initialProducts]);
+  }, [initialProducts, localProducts]);
 
   /* ---- Filtered + sorted ---- */
   const displayProducts = useMemo(() => {
@@ -179,7 +216,14 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
 
     // Subcategory filter
     if (activeSubcat) {
-      list = list.filter(p => p.category === activeSubcat);
+      list = list.filter(p => {
+        if (p.category === activeSubcat) return true;
+        // Map overlapping or legacy categories
+        if (activeSubcat === 'Dinnerware' && p.category === 'Blue Pottery') return true;
+        if (activeSubcat === 'Dining Table' && p.category === 'Table') return true;
+        if (activeSubcat === 'Dining Chair' && p.category === 'Chair') return true;
+        return false;
+      });
     }
 
     // Material filter
@@ -218,17 +262,6 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
       return next;
     });
   }, []);
-
-  /* ---- Add to cart ---- */
-  const addToCart = useCallback((product: ProductItem) => {
-    setCart(prev => {
-      const exists = prev.find(i => i.id === product.id);
-      if (exists) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...prev, { ...product, quantity: 1 }];
-    });
-  }, []);
-
-  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
 
   /* ---- Clear filters ---- */
   const clearFilters = () => {
@@ -375,10 +408,10 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
 
         {/* Row 3 — Main category nav */}
         <nav className="pb-cat-nav" aria-label="Main navigation">
-          {NAV_ITEMS.map(({ name, active, extraClass }) => (
+          {navItems.map(({ name, active, extraClass, href }) => (
             <a
               key={name}
-              href={name === 'Living' ? '#' : '/'}
+              href={active ? '#' : href}
               className={`pb-cat-link${extraClass ? ` ${extraClass}` : ''}${active ? ' pb-cat-active' : ''}`}
             >
               {name}
@@ -462,9 +495,11 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
                 <img src={item.img} alt={item.name} className="cart-item-img" />
                 <div className="cart-item-info">
                   <div className="cart-item-name">{item.name}</div>
-                  <div className="cart-item-price">${(item.usdPrice * item.quantity).toLocaleString()}</div>
+                  <div className="cart-item-price">
+                    {formatPrice(item.usdPrice * item.quantity, item.pkrPrice * item.quantity)}
+                  </div>
                 </div>
-                <button className="cart-item-remove" onClick={() => setCart(c => c.filter(i => i.id !== item.id))}>
+                <button className="cart-item-remove" onClick={() => removeFromCart(item.id)}>
                   <i className="fa-solid fa-xmark" />
                 </button>
               </div>
@@ -475,7 +510,7 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
           <div className="cart-footer">
             <div className="cart-total">
               <span>Total</span>
-              <span>${cart.reduce((s, i) => s + i.usdPrice * i.quantity, 0).toLocaleString()}</span>
+              <span>{getSubtotal()}</span>
             </div>
             <button className="shop-checkout-btn">Proceed to Checkout</button>
           </div>
@@ -491,14 +526,14 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
         <div className="shop-breadcrumb">
           <a href="/" className="shop-breadcrumb-link">
             <i className="fa-solid fa-chevron-left" style={{ fontSize: '0.6rem' }} />
-            &nbsp;Living
+            &nbsp;{breadcrumbLabel}
           </a>
         </div>
 
         {/* Category title row */}
         <div className="shop-title-row">
           <div className="shop-title-left">
-            <h1 className="shop-title">All Living Room</h1>
+            <h1 className="shop-title">{title}</h1>
             <button
               className="shop-view-items"
               onClick={() => document.querySelector('.shop-grid')?.scrollIntoView({ behavior: 'smooth' })}
@@ -539,7 +574,7 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
             onPointerUp={onSubcatUp}
             onPointerLeave={onSubcatUp}
           >
-            {SUBCATEGORIES.map(sub => (
+            {subcategories.map(sub => (
               <button
                 key={sub.label}
                 className={`shop-subcat-item${activeSubcat === sub.filter ? ' active' : ''}`}
@@ -652,17 +687,20 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
               </button>
               {openSections.category && (
                 <div className="shop-filter-section-body">
-                  {['Bench', 'Chair', 'Stool', 'Lounge', 'Sofa', 'Storage'].map(cat => (
-                    <label key={cat} className="shop-filter-check">
-                      <input
-                        type="checkbox"
-                        checked={activeSubcat === cat}
-                        onChange={() => setActiveSubcat(prev => prev === cat ? null : cat)}
-                      />
-                      <span>{cat}s</span>
-                      <span className="shop-filter-count">({categoryCounts[cat] || 0})</span>
-                    </label>
-                  ))}
+                  {subcategories.filter(s => s.filter !== null).map(sub => {
+                    const cat = sub.filter!;
+                    return (
+                      <label key={cat} className="shop-filter-check">
+                        <input
+                          type="checkbox"
+                          checked={activeSubcat === cat}
+                          onChange={() => setActiveSubcat(prev => prev === cat ? null : cat)}
+                        />
+                        <span>{sub.label}</span>
+                        <span className="shop-filter-count">({categoryCounts[cat] || 0})</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -675,7 +713,7 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
               </button>
               {openSections.material && (
                 <div className="shop-filter-section-body">
-                  {MATERIALS.map(mat => (
+                  {materials.map(mat => (
                     <label key={mat} className="shop-filter-check">
                       <input
                         type="checkbox"
@@ -794,8 +832,13 @@ export default function ShopPage({ initialProducts }: ShopPageProps) {
                     {/* Name */}
                     <a href={`/shop/product/${product.id}`} className="shop-card-name">{product.name}</a>
 
-                    {/* Artisan */}
-                    <div className="shop-card-artisan">{product.artisan}</div>
+                    {/* Artisan — links into the maker's dossier when the
+                        registry claims them, plain text otherwise. */}
+                    <div className="shop-card-artisan">
+                      {artisanSlugFor(product.artisan)
+                        ? <a href={`/artisans/${artisanSlugFor(product.artisan)}`}>{product.artisan}</a>
+                        : product.artisan}
+                    </div>
 
                     {/* Price */}
                     <div className="shop-card-price">

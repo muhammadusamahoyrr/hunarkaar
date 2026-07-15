@@ -1,8 +1,42 @@
 'use client';
 
+/* ============================================================
+   SHOP ROOMS — /rooms  (redesigned)
+
+   What changed and why:
+   · The page now renders inside SiteShell instead of carrying its
+     own degraded header copy — cart, search, mega-menu and footer
+     all work here now, matching every other interior page.
+   · ~300 lines of inline style objects moved to rm- classes in
+     globals.css. Inline styles cannot carry media queries, which
+     is why the old grid was 2 columns on phones.
+   · Headings were Jost weight-100 uppercase with negative
+     tracking (an off-system drift the design doc explicitly
+     warns about, and weight 100 isn't even loaded). Display type
+     is Cormorant again; Jost is reserved for labels.
+   · The room's own name ("The Lahori Living Room") existed in
+     data but was never rendered. It now sits on a linen card over
+     the top-left of the scene — deliberately covering the RH
+     promotional text that is baked into the room.png source file.
+   · Hotspots on right-hand duplicates (sofa/mirror/ottoman) used
+     to scroll nowhere: the grid de-dupes by name, so their card
+     ids didn't exist. They now resolve to the surviving card.
+   · Category tabs used to relabel the section while showing the
+     same living room. Categories without a room now show an
+     honest empty state instead.
+   · "Add to Inquiry" was a dead button; it now opens the site's
+     bespoke inquiry modal — the one flow that matches the label.
+   · Hotspots, arrows and the toggle are real <button>s now:
+     keyboard-reachable, with focus states.
+
+   All product data, copy, and the hotspot/toggle/tab behaviours
+   are otherwise unchanged.
+   ============================================================ */
+
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import SiteShell, { useSiteContext } from './SiteShell';
 
 /* ─────────────────────────────────────────────
    TYPES
@@ -32,7 +66,7 @@ interface RoomScene {
 }
 
 /* ─────────────────────────────────────────────
-   PRODUCT DATA
+   PRODUCT DATA — unchanged
 ───────────────────────────────────────────── */
 const LIVING_PRODUCTS: RoomProduct[] = [
   { id: 'lahori-cloud-sofa-left',    name: 'Lahori Cloud Sofa',          category: 'Seating',  x: 18, y: 62, usdPrice: '$4,995', pkrPrice: '₨1,395,000', description: 'Hand-crafted in Lahore over six weeks. Sheesham wood frame with hand-woven camel-hued fabric.',               material: 'Hand-woven Fabric · Solid Sheesham Wood', artisan: 'Ustad Hamid & Sons',            origin: 'Lahore, Punjab',       image: '/hk2.png', tags: ['Handcrafted', 'Made to Order', '6-Week Lead'] },
@@ -53,28 +87,12 @@ const ROOMS: RoomScene[] = [
   { id: 'living-1', label: 'The Lahori Living Room', subtitle: 'Heritage Collection No. 1', category: 'Living', products: LIVING_PRODUCTS },
 ];
 
-/* ─────────────────────────────────────────────
-   CATEGORY TABS
-───────────────────────────────────────────── */
 const CATEGORIES = ['Estates', 'Living', 'Dining', 'Bedroom', 'Bath', 'Textiles', 'Lighting', 'Rugs', 'Décor', 'Outdoor'];
 
 /* ─────────────────────────────────────────────
-   GRID ICON
-───────────────────────────────────────────── */
-function GridIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      {[0, 6, 12].map(gy =>
-        [0, 6, 12].map(gx => (
-          <rect key={`${gx}-${gy}`} x={gx} y={gy} width="4" height="4" fill="#8a7d72" />
-        ))
-      )}
-    </svg>
-  );
-}
-
-/* ─────────────────────────────────────────────
-   PLUS HOTSPOT
+   PLUS HOTSPOT — now a real <button> (keyboard-
+   reachable); static styles live in rm- classes,
+   only the data-driven x/y position stays inline.
 ───────────────────────────────────────────── */
 function PlusHotspot({
   product,
@@ -83,7 +101,7 @@ function PlusHotspot({
 }: {
   product: RoomProduct;
   visible: boolean;
-  onScrollTo: (id: string) => void;
+  onScrollTo: (p: RoomProduct) => void;
 }) {
   const [hovered, setHovered] = useState(false);
 
@@ -92,95 +110,38 @@ function PlusHotspot({
       {visible && (
         <motion.div
           key={product.id}
-          style={{
-            position: 'absolute',
-            left: `${product.x}%`,
-            top: `${product.y}%`,
-            transform: 'translate(-50%, -50%)',
-            zIndex: hovered ? 50 : 30,
-            cursor: 'pointer',
-          }}
+          className="rm-hotspot-wrap"
+          style={{ left: `${product.x}%`, top: `${product.y}%`, zIndex: hovered ? 50 : 38 }}
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
           transition={{ type: 'spring', stiffness: 320, damping: 24 }}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          onClick={() => onScrollTo(product.id)}
         >
-          <motion.div
+          <motion.button
+            type="button"
+            className="rm-hotspot"
+            aria-label={`View ${product.name}`}
+            onClick={() => onScrollTo(product)}
+            onFocus={() => setHovered(true)}
+            onBlur={() => setHovered(false)}
             animate={{ scale: hovered ? 1.18 : 1 }}
             transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: '50%',
-              background: 'rgba(241,237,232,0.88)',
-              border: '1px solid rgba(200,195,190,0.9)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 1px 8px rgba(26,21,18,0.22)',
-            }}
           >
-            <span
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '1rem',
-                fontWeight: 300,
-                color: '#2c2520',
-                lineHeight: 1,
-                marginTop: -1,
-              }}
-            >
-              +
-            </span>
-          </motion.div>
+            +
+          </motion.button>
 
-          {/* Tooltip */}
           <AnimatePresence>
             {hovered && (
               <motion.div
+                className="rm-hotspot-tip"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
                 transition={{ duration: 0.14 }}
-                style={{
-                  position: 'absolute',
-                  bottom: 'calc(100% + 8px)',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'rgba(26,21,18,0.9)',
-                  padding: '5px 10px',
-                  whiteSpace: 'nowrap',
-                  pointerEvents: 'none',
-                  zIndex: 60,
-                }}
               >
-                <span
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '0.58rem',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    color: '#f1ede8',
-                  }}
-                >
-                  {product.name}
-                </span>
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    width: 0,
-                    height: 0,
-                    borderLeft: '4px solid transparent',
-                    borderRight: '4px solid transparent',
-                    borderTop: '4px solid rgba(26,21,18,0.9)',
-                  }}
-                />
+                {product.name}
               </motion.div>
             )}
           </AnimatePresence>
@@ -191,385 +152,239 @@ function PlusHotspot({
 }
 
 /* ─────────────────────────────────────────────
-   PRODUCT CARD
+   PRODUCT CARD — same content, on-system type:
+   Cormorant name, legible sizes, hairline chips.
+   The dead href="#" is gone (there is no PDP for
+   these pieces); the hotspots target the card.
 ───────────────────────────────────────────── */
-function ProductCard({ product }: { product: RoomProduct }) {
+function RoomProductCard({ product }: { product: RoomProduct }) {
+  const { openBespoke } = useSiteContext();
+
   return (
-    <motion.div
+    <motion.article
       id={`product-${product.id}`}
+      className="rm-card"
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      style={{ display: 'flex', flexDirection: 'column' }}
     >
-      {/* Image */}
-      <div style={{ background: '#ede8e2', overflow: 'hidden', marginBottom: 14, position: 'relative', aspectRatio: '4/3' }}>
-        <img
-          src={product.image}
-          alt={product.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLImageElement).style.transform = 'scale(1.05)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLImageElement).style.transform = 'scale(1)'; }}
-        />
+      <div className="rm-card-img">
+        <img src={product.image} alt={product.name} loading="lazy" />
       </div>
 
-      {/* Category + origin */}
-      <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.58rem', letterSpacing: '0.13em', textTransform: 'uppercase', color: '#8a7d72', marginBottom: 5 }}>
-        {product.category} &nbsp;·&nbsp; {product.origin}
+      <span className="rm-card-eyebrow">
+        {product.category} · {product.origin}
       </span>
 
-      {/* Name */}
-      <a
-        href="#"
-        style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: '#2c2520', textDecoration: 'none', lineHeight: 1.2, marginBottom: 6, display: 'block' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#b8935a'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#2c2520'; }}
-      >
-        {product.name}
-      </a>
+      <h3 className="rm-card-name">{product.name}</h3>
 
-      {/* Description */}
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: '#5a4f48', lineHeight: 1.65, marginBottom: 10 }}>
-        {product.description}
-      </p>
+      <p className="rm-card-desc">{product.description}</p>
 
-      {/* Prices */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.82rem', fontWeight: 600, color: '#2c2520' }}>{product.usdPrice}</span>
-        <span style={{ width: 1, height: 10, background: 'rgba(44,37,32,0.18)', display: 'inline-block' }} />
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: '#8a7d72' }}>{product.pkrPrice}</span>
+      <p className="rm-card-material">{product.material} — {product.artisan}</p>
+
+      <div className="rm-card-prices">
+        <span className="rm-card-usd">{product.usdPrice}</span>
+        <span className="rm-card-price-sep" aria-hidden="true" />
+        <span className="rm-card-pkr">{product.pkrPrice}</span>
       </div>
 
-      {/* Tags */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+      <div className="rm-card-tags">
         {product.tags.map(tag => (
-          <span key={tag} style={{ fontFamily: 'var(--font-body)', fontSize: '0.54rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8a7d72', border: '1px solid rgba(138,125,114,0.28)', padding: '2px 7px' }}>
-            {tag}
-          </span>
+          <span key={tag} className="rm-card-tag">{tag}</span>
         ))}
       </div>
 
-      {/* CTA */}
-      <button style={{ fontFamily: 'var(--font-body)', fontSize: '0.6rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#2c2520', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textDecoration: 'underline', textAlign: 'left', textUnderlineOffset: 3 }}>
+      {/* Was a dead button; the bespoke modal IS the inquiry flow. */}
+      <button type="button" className="cta-link rm-card-cta" onClick={() => openBespoke()}>
         Add to Inquiry
       </button>
-    </motion.div>
+    </motion.article>
   );
 }
 
 /* ─────────────────────────────────────────────
-   ROOMS PAGE
+   PAGE CONTENT
 ───────────────────────────────────────────── */
-export default function RoomsPage() {
-  const router = useRouter();
+function RoomsContent() {
   const [activeCategory, setActiveCategory] = useState('Living');
   const [currentRoomIdx, setCurrentRoomIdx] = useState(0);
   const [showProducts, setShowProducts] = useState(true);
 
-  const currentRoom = ROOMS[currentRoomIdx];
+  /* Tabs used to relabel the section while still showing the living
+     room. Rooms are filtered by category now; empty categories get
+     an honest empty state. */
+  const roomsForCategory = ROOMS.filter(r => r.category === activeCategory);
+  const currentRoom = roomsForCategory[Math.min(currentRoomIdx, Math.max(0, roomsForCategory.length - 1))];
 
-  const scrollToProduct = useCallback((id: string) => {
-    const el = document.getElementById(`product-${id}`);
+  const selectCategory = (cat: string) => {
+    setActiveCategory(cat);
+    setCurrentRoomIdx(0);
+  };
+
+  /* The grid de-dupes by name (two sofas in the room, one card), so a
+     right-hand hotspot's own id has no card. Resolve to the card that
+     survived de-duplication instead of silently doing nothing. */
+  const scrollToProduct = useCallback((product: RoomProduct) => {
+    const target = currentRoom?.products.find(q => q.name === product.name) ?? product;
+    const el = document.getElementById(`product-${target.id}`);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.style.outline = '2px solid #b8935a';
-    el.style.outlineOffset = '8px';
-    setTimeout(() => { el.style.outline = ''; el.style.outlineOffset = ''; }, 1400);
-  }, []);
+    el.classList.add('rm-card-flash');
+    setTimeout(() => el.classList.remove('rm-card-flash'), 1400);
+  }, [currentRoom]);
 
   const goLeft  = () => setCurrentRoomIdx(i => Math.max(0, i - 1));
-  const goRight = () => setCurrentRoomIdx(i => Math.min(ROOMS.length - 1, i + 1));
+  const goRight = () => setCurrentRoomIdx(i => Math.min(roomsForCategory.length - 1, i + 1));
+
+  const dedupedProducts = currentRoom
+    ? currentRoom.products.filter((p, i, arr) => arr.findIndex(q => q.name === p.name) === i)
+    : [];
 
   return (
-    <div style={{ background: '#f1ede8', minHeight: '100vh' }}>
-
-      {/* ── Full RH-style 2-row header ── */}
-      <header id="site-header" className="scrolled" style={{ position: 'sticky', top: 0, zIndex: 200, borderBottom: 'none' }}>
-
-        {/* Row 1: hamburger/back · logo · right actions */}
-        <div className="header-top-bar">
-          {/* Left */}
-          <div className="header-left">
-            <button
-              className="header-icon-btn menu-toggle"
-              onClick={() => router.back()}
-              aria-label="Back"
-              style={{ display: 'flex', flexDirection: 'column', gap: 4, justifyContent: 'center', alignItems: 'center' }}
-            >
-              <span className="hamburger-lines" />
-            </button>
-            <button className="header-icon-btn" aria-label="Search">
-              <i className="fa-solid fa-magnifying-glass" />
-            </button>
-          </div>
-
-          {/* Center Logo */}
-          <div className="header-logo-wrap">
-            <a href="/" className="logo">
-              H<em>unarkar</em>
-            </a>
-          </div>
-
-          {/* Right */}
-          <div className="header-right">
-            <button className="header-interior-design">
-              Interior Design
-            </button>
-            <button className="header-icon-btn" aria-label="Account">
-              <i className="fa-regular fa-user" />
-            </button>
-            <button className="header-icon-btn" aria-label="Bag">
-              <i className="fa-solid fa-bag-shopping" />
-            </button>
-          </div>
-        </div>
-
-        {/* Row 2: category nav */}
-        <nav className="header-nav-bar" aria-label="Main navigation" style={{ borderBottom: 'none' }}>
-          <a href="/#new-arrivals" className="nav-category-link">Estates</a>
-          <a href="/#new-arrivals" className="nav-category-link">Living</a>
-          <a href="/#new-arrivals" className="nav-category-link">Dining</a>
-          <a href="/#new-arrivals" className="nav-category-link">Bed</a>
-          <a href="/#new-arrivals" className="nav-category-link">Bath</a>
-          <a href="/#new-arrivals" className="nav-category-link">Outdoor</a>
-          <a href="/#new-arrivals" className="nav-category-link">Lighting</a>
-          <a href="/#new-arrivals" className="nav-category-link">Textiles</a>
-          <a href="/#new-arrivals" className="nav-category-link">Rugs</a>
-          <a href="/#new-arrivals" className="nav-category-link">Décor</a>
-          <a href="/#new-arrivals" className="nav-category-link nav-baby-child">Baby &amp; Child</a>
-          <a href="/#new-arrivals" className="nav-category-link nav-baby-child">Teen</a>
-          <a href="/#bespoke-banner" className="nav-category-link nav-sale">Sale</a>
+    <main className="rm">
+      {/* ── Masthead: same copy, Cormorant register ── */}
+      <header className="rm-masthead">
+        <nav className="rm-breadcrumb" aria-label="Breadcrumb">
+          <Link href="/">Home</Link>
+          <span aria-hidden="true">/</span>
+          <span>Rooms</span>
         </nav>
+        <h1 className="rm-title">Shop Rooms</h1>
       </header>
 
-      {/* ── SHOP ROOMS heading ── */}
-      <div style={{ textAlign: 'center', padding: '18px 0 14px' }}>
-        <h1
-          style={{
-            fontFamily: 'var(--font-body)',
-            fontSize: 'clamp(1.4rem, 2.5vw, 2rem)',
-            fontWeight: 100,
-            color: '#2c2520',
-            letterSpacing: '-0.02em',
-            textTransform: 'uppercase',
-            margin: 0,
-          }}
-        >
-          Shop Rooms
-        </h1>
-      </div>
-
-      {/* ── Hairline divider ── */}
-      <div style={{ height: 1, background: 'rgba(44,37,32,0.1)', margin: '0 0 0' }} />
-
-      {/* ── Category filter tabs ── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderBottom: '1px solid rgba(44,37,32,0.08)',
-          padding: '0 4%',
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-        }}
-      >
-        {CATEGORIES.map((cat, i) => (
+      {/* ── Category rail ── */}
+      <div className="rm-tabs" role="tablist" aria-label="Room categories">
+        {CATEGORIES.map(cat => (
           <button
             key={cat}
-            onClick={() => setActiveCategory(cat)}
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '0.82rem',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: cat === activeCategory ? '#2c2520' : '#a09690',
-              fontWeight: cat === activeCategory ? 600 : 400,
-              background: 'none',
-              border: 'none',
-              borderBottom: cat === activeCategory ? '2px solid #2c2520' : '2px solid transparent',
-              padding: '14px 16px',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              marginBottom: -1,
-            }}
+            role="tab"
+            aria-selected={cat === activeCategory}
+            className={`rm-tab${cat === activeCategory ? ' active' : ''}`}
+            onClick={() => selectCategory(cat)}
           >
-            {cat.toUpperCase()}
+            {cat}
           </button>
         ))}
       </div>
 
-      {/* ── Section label + counter + grid icon ── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '10px 4%',
-          borderBottom: '1px solid rgba(44,37,32,0.07)',
-        }}
-      >
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: '1.7rem', letterSpacing: '-0.02em', textTransform: 'uppercase', color: '#b8935a', fontWeight: 100 }}>
-          {activeCategory}
-        </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.72rem', color: '#b8935a', letterSpacing: '0.06em' }}>
-            {currentRoomIdx + 1} / {ROOMS.length}
-          </span>
-          <GridIcon />
-        </div>
-      </div>
+      {currentRoom ? (
+        <>
+          {/* ── The scene ── */}
+          <section className="rm-scene" aria-label={currentRoom.label}>
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={currentRoom.id}
+                src="/room.png"
+                alt={currentRoom.label}
+                draggable={false}
+                className="rm-scene-img"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
+              />
+            </AnimatePresence>
 
-      {/* ── Room image + navigation arrows + hotspots ── */}
-      <div style={{ position: 'relative', lineHeight: 0 }}>
+            {/* Room label card — the label/subtitle data was never
+                rendered before. Positioned top-left, where it also
+                covers third-party promotional text baked into the
+                source photograph. */}
+            <div className="rm-scene-label">
+              <span className="rm-scene-label-eyebrow">{currentRoom.subtitle}</span>
+              <h2 className="rm-scene-label-title">{currentRoom.label}</h2>
+              {roomsForCategory.length > 1 && (
+                <span className="rm-scene-counter">
+                  {currentRoomIdx + 1} / {roomsForCategory.length}
+                </span>
+              )}
+            </div>
 
-        {/* Room image */}
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={currentRoom.id}
-            src="/room.png"
-            alt={currentRoom.label}
-            draggable={false}
-            style={{ width: '100%', display: 'block', userSelect: 'none' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
-          />
-        </AnimatePresence>
-
-        {/* + Hotspot buttons */}
-        {currentRoom.products.map(product => (
-          <PlusHotspot
-            key={product.id}
-            product={product}
-            visible={showProducts}
-            onScrollTo={scrollToProduct}
-          />
-        ))}
-
-        {/* ← Left navigation panel */}
-        <div
-          onClick={goLeft}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 72,
-            height: 112,
-            background: '#ffffff',
-            boxShadow: '2px 0 12px rgba(26,21,18,0.18)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: currentRoomIdx > 0 ? 'pointer' : 'default',
-            opacity: currentRoomIdx > 0 ? 1 : 0.28,
-            zIndex: 40,
-            transition: 'opacity 0.2s',
-          }}
-        >
-          <svg width="22" height="38" viewBox="0 0 20 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M16 2L2 17L16 32" stroke="#000000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-
-        {/* › Right navigation panel */}
-        <div
-          onClick={goRight}
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 72,
-            height: 112,
-            background: '#ffffff',
-            boxShadow: '-2px 0 12px rgba(26,21,18,0.18)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: currentRoomIdx < ROOMS.length - 1 ? 'pointer' : 'default',
-            opacity: currentRoomIdx < ROOMS.length - 1 ? 1 : 0.28,
-            zIndex: 40,
-            transition: 'opacity 0.2s',
-          }}
-        >
-          <svg width="22" height="38" viewBox="0 0 20 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 2L18 17L4 32" stroke="#000000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
-      </div>
-
-      {/* ── ✓ SHOW PRODUCTS toggle ── */}
-      <div style={{ padding: '16px 4%', display: 'flex', alignItems: 'center' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
-          {/* Checkbox */}
-          <div
-            onClick={() => setShowProducts(v => !v)}
-            style={{
-              width: 15,
-              height: 15,
-              border: '1px solid #2c2520',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            {showProducts && (
-              <span style={{ fontSize: '0.6rem', color: '#2c2520', lineHeight: 1, marginTop: -1 }}>✓</span>
-            )}
-          </div>
-          <span
-            onClick={() => setShowProducts(v => !v)}
-            style={{ fontFamily: 'var(--font-body)', fontSize: '0.62rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#2c2520' }}
-          >
-            Show Products
-          </span>
-        </label>
-      </div>
-
-      {/* ── ITEMS IN THIS ROOM ── */}
-      <div style={{ padding: '8px 6% 80px' }}>
-
-        {/* Section heading */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h2
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '1.6rem',
-              letterSpacing: '-0.02em',
-              textTransform: 'uppercase',
-              fontWeight: 100,
-              color: '#2c2520',
-              margin: '0 0 16px',
-            }}
-          >
-            Items in This Room
-          </h2>
-          <div style={{ width: 36, height: 1, background: 'rgba(44,37,32,0.18)', margin: '0 auto' }} />
-        </div>
-
-        {/* 2-column product grid — de-duped by name */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '56px 52px',
-            maxWidth: 960,
-            margin: '0 auto',
-          }}
-        >
-          {currentRoom.products
-            .filter((p, i, arr) => arr.findIndex(q => q.name === p.name) === i)
-            .map(product => (
-              <ProductCard key={product.id} product={product} />
+            {currentRoom.products.map(product => (
+              <PlusHotspot
+                key={product.id}
+                product={product}
+                visible={showProducts}
+                onScrollTo={scrollToProduct}
+              />
             ))}
-        </div>
-      </div>
 
-    </div>
+            {/* Arrows only exist when there is somewhere to go —
+                two permanently disabled panels helped nobody. */}
+            {roomsForCategory.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="rm-scene-arrow rm-scene-arrow--left"
+                  onClick={goLeft}
+                  disabled={currentRoomIdx === 0}
+                  aria-label="Previous room"
+                >
+                  <i className="fa-solid fa-chevron-left" />
+                </button>
+                <button
+                  type="button"
+                  className="rm-scene-arrow rm-scene-arrow--right"
+                  onClick={goRight}
+                  disabled={currentRoomIdx === roomsForCategory.length - 1}
+                  aria-label="Next room"
+                >
+                  <i className="fa-solid fa-chevron-right" />
+                </button>
+              </>
+            )}
+          </section>
+
+          {/* ── Utility bar ── */}
+          <div className="rm-utility">
+            <button
+              type="button"
+              className="rm-toggle"
+              aria-pressed={showProducts}
+              onClick={() => setShowProducts(v => !v)}
+            >
+              <span className={`rm-toggle-box${showProducts ? ' checked' : ''}`} aria-hidden="true">
+                {showProducts && '✓'}
+              </span>
+              Show Products
+            </button>
+            <span className="rm-utility-count">
+              {dedupedProducts.length} {dedupedProducts.length === 1 ? 'piece' : 'pieces'}
+            </span>
+          </div>
+
+          {/* ── Items in this room ── */}
+          <section className="rm-items" aria-labelledby="rm-items-h">
+            <div className="rm-items-head">
+              <h2 id="rm-items-h" className="rm-items-title">Items in This Room</h2>
+              <div className="rm-items-rule" aria-hidden="true" />
+            </div>
+
+            <div className="rm-grid">
+              {dedupedProducts.map(product => (
+                <RoomProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        </>
+      ) : (
+        /* Honest empty state — the old page showed the living room
+           relabelled as whatever tab you clicked. */
+        <div className="rm-empty">
+          <p>The {activeCategory} room is still being photographed.</p>
+          <button type="button" className="cta-link" onClick={() => selectCategory('Living')}>
+            View the Living Room
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
+
+export default function RoomsPage() {
+  return (
+    <SiteShell>
+      <RoomsContent />
+    </SiteShell>
   );
 }

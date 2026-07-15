@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Jost } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/Toast';
+import { CartProvider } from '@/lib/CartContext';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -31,11 +32,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${cormorant.variable} ${jost.variable}`}>
       <body>
-        {/* Mounted once at the root: Homepage, SiteShell and CategoryPage all
-            raise toasts, and each needs the same viewport rather than three
-            competing stacks. ToastProvider is a client component; a server
-            layout may render it. */}
-        <ToastProvider>{children}</ToastProvider>
+        {/* Both mounted once at the root, for the same reason: Homepage,
+            ShopPage and SiteShell each used to hold private copies of this
+            state, so a navigation reset it. The cart in particular emptied
+            itself on every route change. Client components; a server layout
+            may render them. */}
+        <CartProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </CartProvider>
       </body>
     </html>
   );

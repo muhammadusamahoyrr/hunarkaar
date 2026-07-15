@@ -7,6 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import ShopTheRoom from './ShopTheRoom';
 import { useToast } from './Toast';
+import { useCart } from '@/lib/CartContext';
 
 /* ============================================================
    TYPE DEFINITIONS
@@ -20,10 +21,6 @@ interface ProductItem {
   img: string;
   description: string;
   artisan: string;
-}
-
-interface CartItem extends ProductItem {
-  quantity: number;
 }
 
 interface HomepageProps {
@@ -562,7 +559,9 @@ const NAV_MENUS: Record<string, NavMenu> = {
 
 const CATEGORY_ROUTES: Record<string, string> = {
   Living: '/shop/living',
+  Dining: '/dining',
   Textiles: '/textiles',
+  Lighting: '/lighting',
 };
 
 const NAV_ITEMS: Array<{ name: string; extraClass?: string; href?: string }> = [
@@ -587,14 +586,20 @@ const NAV_ITEMS: Array<{ name: string; extraClass?: string; href?: string }> = [
 export default function Homepage({ initialProducts }: HomepageProps) {
   const toast = useToast();
   const [products] = useState<ProductItem[]>(initialProducts);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [currency, setCurrency] = useState<'USD' | 'PKR'>('PKR');
+
+  /* Cart, currency and the bag drawer are shared site-wide and persisted —
+     see lib/CartContext. Holding them here is what used to empty the bag on
+     every navigation away from the homepage. */
+  const {
+    cart, addToCart, removeFromCart, updateQty, cartCount,
+    cartOpen, setCartOpen,
+    currency, setCurrency, formatPrice, getSubtotal,
+  } = useCart();
 
   // Product ids whose image 404'd. Previously these fell back to picsum.photos,
   // which pulled a random third-party stock photo onto the page in production.
   const [failedImgs, setFailedImgs] = useState<Set<string>>(new Set());
 
-  const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileExpandedItem, setMobileExpandedItem] = useState<string | null>(null);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -1263,27 +1268,6 @@ export default function Homepage({ initialProducts }: HomepageProps) {
     }
   }, [cartOpen, searchOpen, bespokeOpen, quickView, mobileMenuOpen]);
 
-  /* ----------------------------------------------------------
-     CART HELPERS
-  ---------------------------------------------------------- */
-  const addToCart = (product: ProductItem) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.id === product.id);
-      if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...prev, { ...product, quantity: 1 }];
-    });
-    setCartOpen(true);
-  };
-
-  const removeFromCart = (id: string) => setCart(prev => prev.filter(i => i.id !== id));
-
-  const updateQty = (id: string, qty: number) => {
-    if (qty <= 0) { removeFromCart(id); return; }
-    setCart(prev => prev.map(i => i.id === id ? { ...i, quantity: qty } : i));
-  };
-
-  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
-
   const openMenu = (name: string, left: number) => {
     if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
     menuTimerRef.current = setTimeout(() => {
@@ -1310,14 +1294,6 @@ export default function Homepage({ initialProducts }: HomepageProps) {
   const cancelClose = () => {
     if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
     setMenuClosing(false);
-  };
-
-  const formatPrice = (usd: number, pkr: number) =>
-    currency === 'USD' ? `$${usd.toFixed(2)}` : `Rs ${pkr.toLocaleString('en-US')}`;
-
-  const getSubtotal = () => {
-    if (currency === 'USD') return `$${cart.reduce((s, i) => s + i.usdPrice * i.quantity, 0).toFixed(2)}`;
-    return `Rs ${cart.reduce((s, i) => s + i.pkrPrice * i.quantity, 0).toLocaleString('en-US')}`;
   };
 
   /* ----------------------------------------------------------
@@ -2427,6 +2403,10 @@ export default function Homepage({ initialProducts }: HomepageProps) {
                         <option>Chiniot Walnut Woodcarving</option>
                         <option>Hammered Fine Brassware</option>
                         <option>Green/Gold Onyx Masonry</option>
+                        {/* Kept in step with the same list in SiteShell. */}
+                        <option>Leather Weaving & Saddlery</option>
+                        <option>Palm, Rattan & Cane</option>
+                        <option>Zardozi Khussa</option>
                       </select>
                     </div>
                     <div className="form-group">

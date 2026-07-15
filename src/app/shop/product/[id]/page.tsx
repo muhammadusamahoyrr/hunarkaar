@@ -2,7 +2,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { Product } from '@/models/Product';
 import ProductDetail from '@/components/ProductDetail';
 import {
-  getLocalProductById, getRelatedLocalProducts, LOCAL_PRODUCTS,
+  getLocalProductById, getRelatedLocalProducts, LOCAL_PRODUCTS, LIGHTING_PRODUCTS,
   type LocalProduct,
 } from '@/lib/localProducts';
 import type { ProductItem } from '@/lib/siteData';
@@ -45,5 +45,5 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 }
 
 export function generateStaticParams() {
-  return LOCAL_PRODUCTS.map(p => ({ id: p.id }));
+  return [...LOCAL_PRODUCTS, ...LIGHTING_PRODUCTS].map(p => ({ id: p.id }));
 }

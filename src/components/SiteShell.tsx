@@ -9,8 +9,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import {
   NAV_MENUS, NAV_ITEMS,
-  type ProductItem, type CartItem,
+  type ProductItem,
 } from '@/lib/siteData';
+import { useCart } from '@/lib/CartContext';
 
 /* ============================================================
    CONTEXT — cart + ui actions available to child pages
@@ -23,6 +24,9 @@ interface SiteContextType {
   setCurrency: Dispatch<SetStateAction<'USD' | 'PKR'>>;
   cartCount: number;
   setCartOpen: Dispatch<SetStateAction<boolean>>;
+  /* Opens the commission modal, optionally pre-scoped to a craft. The craft
+     must be one of the modal's <select> options or the prefill is a no-op. */
+  openBespoke: (craft?: string) => void;
 }
 
 export const SiteContext = createContext<SiteContextType>({} as SiteContextType);
@@ -38,10 +42,25 @@ export function SafeImg({
   className?: string; style?: React.CSSProperties;
 }) {
   const [imgSrc, setImgSrc] = useState(src);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const applyFallback = () =>
+    setImgSrc(fallback || `https://picsum.photos/seed/${alt.replace(/\s/g, '-')}/800/600`);
+
+  /* An image that 404s while the server-rendered HTML is loading errors
+     before React attaches onError, and the event never re-fires — the broken
+     image just sits there. Catch that case on mount. */
+  useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth === 0) applyFallback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <img
+      ref={imgRef}
       src={imgSrc} alt={alt} className={className} style={style} loading="lazy"
-      onError={() => setImgSrc(fallback || `https://picsum.photos/seed/${alt.replace(/\s/g, '-')}/800/600`)}
+      onError={applyFallback}
     />
   );
 }
@@ -54,10 +73,14 @@ interface SiteShellProps {
 }
 
 export default function SiteShell({ children }: SiteShellProps) {
+  /* ---------- cart (shared, persisted — see lib/CartContext) ---------- */
+  const {
+    cart, addToCart, removeFromCart, updateQty, cartCount,
+    cartOpen, setCartOpen,
+    currency, setCurrency, formatPrice, getSubtotal,
+  } = useCart();
+
   /* ---------- state ---------- */
-  const [cart, setCart]                       = useState<CartItem[]>([]);
-  const [currency, setCurrency]               = useState<'USD' | 'PKR'>('USD');
-  const [cartOpen, setCartOpen]               = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen]   = useState(false);
   const [mobileExpandedItem, setMobileExpandedItem] = useState<string | null>(null);
   const [activeMenu, setActiveMenu]           = useState<string | null>(null);
@@ -149,28 +172,6 @@ export default function SiteShell({ children }: SiteShellProps) {
     }
   }, [activeMenu]);
 
-  /* ---------- cart helpers ---------- */
-  const addToCart = (product: ProductItem) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.id === product.id);
-      if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...prev, { ...product, quantity: 1 }];
-    });
-    setCartOpen(true);
-  };
-  const removeFromCart = (id: string) => setCart(prev => prev.filter(i => i.id !== id));
-  const updateQty = (id: string, qty: number) => {
-    if (qty <= 0) { removeFromCart(id); return; }
-    setCart(prev => prev.map(i => i.id === id ? { ...i, quantity: qty } : i));
-  };
-  const cartCount  = cart.reduce((s, i) => s + i.quantity, 0);
-  const formatPrice = (usd: number, pkr: number) =>
-    currency === 'USD' ? `$${usd.toFixed(2)}` : `₨ ${pkr.toLocaleString()}`;
-  const getSubtotal = () =>
-    currency === 'USD'
-      ? `$${cart.reduce((s, i) => s + i.usdPrice * i.quantity, 0).toFixed(2)}`
-      : `₨ ${cart.reduce((s, i) => s + i.pkrPrice * i.quantity, 0).toLocaleString()}`;
-
   /* ---------- menu helpers ---------- */
   const openMenu = (name: string) => {
     if (menuTimerRef.current) clearTimeout(menuTimerRef.current);
@@ -218,9 +219,15 @@ export default function SiteShell({ children }: SiteShellProps) {
     }
   };
 
+  const openBespoke = (craft?: string) => {
+    if (craft) setCraftType(craft);
+    setBespokeOpen(true);
+  };
+
   /* ---------- context value ---------- */
   const ctx: SiteContextType = {
     addToCart, setQuickView, formatPrice, currency, setCurrency, cartCount, setCartOpen,
+    openBespoke,
   };
 
   /* ======================================================
@@ -282,7 +289,21 @@ export default function SiteShell({ children }: SiteShellProps) {
               className={`nav-category-link${extraClass ? ` ${extraClass}` : ''}${activeMenu === name ? ' nav-active' : ''}`}
               onMouseEnter={() => openMenu(name)}
               onMouseLeave={scheduleClose}
-              onClick={() => activeMenu === name ? closeMenu() : openMenu(name)}
+              onClick={() => {
+                const routeMap: Record<string, string> = {
+                  'Bed': '/bed',
+                  'Living': '/shop/living',
+                  'Dining': '/dining',
+                  'Textiles': '/textiles',
+                  'Lighting': '/lighting'
+                };
+                if (routeMap[name]) {
+                  closeMenu();
+                  window.location.href = routeMap[name];
+                } else {
+                  activeMenu === name ? closeMenu() : openMenu(name);
+                }
+              }}
             >
               {name}
             </button>
@@ -303,7 +324,7 @@ export default function SiteShell({ children }: SiteShellProps) {
             <div className="cat-inner">
               <div className="cat-links-col">
                 <div className="cat-menu-heading">{activeMenu}</div>
-                <a href={`/${activeMenu.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="cat-shopall" onClick={closeMenu}>
+                <a href={activeMenu === 'Living' ? '/shop/living' : `/${activeMenu.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="cat-shopall" onClick={closeMenu}>
                   Shop All {activeMenu}
                 </a>
                 <p className="cat-popular-label">{NAV_MENUS[activeMenu].popularLabel ?? 'Popular'}</p>
@@ -488,7 +509,7 @@ export default function SiteShell({ children }: SiteShellProps) {
               <li><a href="/decor">Blue Pottery</a></li>
               <li><a href="/textiles">Indigo Ajrak</a></li>
               <li><a href="/textiles">Ralli Patchwork</a></li>
-              <li><a href="/living">Chinioti Woodwork</a></li>
+              <li><a href="/shop/living">Chinioti Woodwork</a></li>
               <li><a href="/lighting">Fine Brassware</a></li>
               <li><a href="/decor">Onyx Crafts</a></li>
             </ul>
@@ -664,6 +685,12 @@ export default function SiteShell({ children }: SiteShellProps) {
                         <option>Chiniot Walnut Woodcarving</option>
                         <option>Hammered Fine Brassware</option>
                         <option>Green/Gold Onyx Masonry</option>
+                        {/* Leather, cane and khussa were missing, yet a third of
+                            the catalogue is made in them. Commissioning a leather
+                            artisan opened this form defaulted to Blue Pottery. */}
+                        <option>Leather Weaving & Saddlery</option>
+                        <option>Palm, Rattan & Cane</option>
+                        <option>Zardozi Khussa</option>
                       </select>
                     </div>
                     <div className="form-group">

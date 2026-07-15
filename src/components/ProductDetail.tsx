@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import SiteShell, { useSiteContext, SafeImg } from './SiteShell';
 import type { ProductItem } from '@/lib/siteData';
 import type { LocalProduct } from '@/lib/localProducts';
+import { artisanSlugFor } from '@/lib/artisans';
 
 interface ProductDetailProps {
   product: LocalProduct;
@@ -131,6 +132,9 @@ function DetailContent({ product, related }: ProductDetailProps) {
   const [makerName, ...rest] = product.artisan.split(',');
   const makerPlace = rest.join(',').trim();
   const makerInitials = makerName.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  /* Null when no artisan in the registry claims this string — the name then
+     renders as plain text rather than a link into a 404. */
+  const artisanSlug = artisanSlugFor(product.artisan);
 
   /* Customer photos for the "Photos from reviews" strip */
   const reviewPhotos = [...product.gallery, ...related.map(r => r.img)].slice(0, 6);
@@ -300,7 +304,13 @@ function DetailContent({ product, related }: ProductDetailProps) {
 
           {/* Shop + rating line */}
           <div className="pdp-rating-row">
-            <span className="pdp-shop-link"><i className="fa-solid fa-certificate" /> {makerName.trim()}</span>
+            {artisanSlug ? (
+              <a href={`/artisans/${artisanSlug}`} className="pdp-shop-link">
+                <i className="fa-solid fa-certificate" /> {makerName.trim()}
+              </a>
+            ) : (
+              <span className="pdp-shop-link"><i className="fa-solid fa-certificate" /> {makerName.trim()}</span>
+            )}
             <StarRating value={L.rating} />
             <span className="pdp-rating-value">{L.rating.toFixed(1)}</span>
             <a href="#pdp-reviews" className="pdp-rating-count">{L.reviews} reviews</a>
@@ -484,7 +494,11 @@ function DetailContent({ product, related }: ProductDetailProps) {
           <div className="pdp-seller-head">
             <div className="pdp-seller-avatar" aria-hidden="true">{makerInitials}</div>
             <div className="pdp-seller-id">
-              <div className="pdp-seller-name">{makerName.trim()}</div>
+              <div className="pdp-seller-name">
+                {artisanSlug
+                  ? <a href={`/artisans/${artisanSlug}`}>{makerName.trim()}</a>
+                  : makerName.trim()}
+              </div>
               <div className="pdp-seller-stats">
                 <span className="pdp-seller-rating"><i className="fa-solid fa-star" /> {L.rating.toFixed(1)} ({L.reviews})</span>
                 <span>·</span><span>{L.shopSales.toLocaleString()} sales</span>

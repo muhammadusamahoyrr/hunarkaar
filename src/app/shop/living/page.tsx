@@ -1,6 +1,12 @@
 import { connectToDatabase } from '@/lib/mongodb';
 import { Product } from '@/models/Product';
 import ShopPage from '@/components/ShopPage';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Living Room — Handcrafted Sofas, Benches & Storage | Hunarkar',
+  description: 'Explore our curated collection of handcrafted Pakistani living room furniture: solid walnut wood benches, hand-woven setts, and artisan-carved cabinets.',
+};
 
 export const revalidate = 10;
 
@@ -26,5 +32,12 @@ export default async function LivingPage() {
     artisan: p.artisan,
   }));
 
-  return <ShopPage initialProducts={serialized} />;
+  return (
+    <ShopPage
+      initialProducts={serialized}
+      categoryType="living"
+      title="All Living Room"
+      breadcrumbLabel="Living"
+    />
+  );
 }
