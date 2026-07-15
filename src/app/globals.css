@@ -4513,13 +4513,11 @@ a.cp-card-artisan:hover {
   color: rgba(26, 21, 18, 0.6) !important;
 }
 
+/* Native-control reset for the <button> variants of .cp-ink-cta. The visual
+   props (color/background/border/border-radius/padding) that used to live here
+   were dead — the pill-standardisation rules below override them with
+   !important — so only the appearance reset remains. */
 .cp-ink-cta {
-  color: var(--color-espresso);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid currentColor;
-  border-radius: 0;
-  padding: 0 0 4px;
   appearance: none;
   -webkit-appearance: none;
 }
