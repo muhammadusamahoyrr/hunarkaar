@@ -106,7 +106,10 @@
   display: block;
 }
 
-/* Panel alternating blocks — color flows to all children via inherit */
+/* ⚠ SITE-WIDE PRIMITIVES — .panel-linen / .panel-sandstone set the section
+   backgrounds on 5+ pages. Edit here = every page's panels shift. Scope a
+   one-page change, e.g.  .page-bed .panel-sandstone { background: … }
+   Panel alternating blocks — color flows to all children via inherit */
 .panel-linen {
   background-color: var(--bg-light);
   color: var(--text-primary);
@@ -913,6 +916,9 @@ button.nav-category-link.nav-active::after {
 
 /* ============================================================
    HAMBURGER DROPDOWN — full-width panel, RH.com style
+   ⚠ SHARED BY page-home + page-shop. Homepage and ShopPage each render
+     their own copy of this menu markup, so every .ham-* rule below styles
+     BOTH. Scope a one-page change, e.g.  .page-shop .ham-col-heading { … }
    ============================================================ */
 .ham-dropdown {
   position: fixed;
@@ -1661,6 +1667,9 @@ button.nav-category-link.nav-active::after {
   gap: 1rem;
 }
 
+/* ⚠ SITE-WIDE PRIMITIVE — .cta-link is used on 6+ pages (every underlined
+   CTA). Editing it here changes CTAs everywhere. For a one-page tweak, scope
+   it instead, e.g.  .page-outdoor .cta-link { color: var(--gold); } */
 .cta-link {
   font-family: var(--font-display);
   font-size: 0.85rem;
@@ -2728,6 +2737,9 @@ footer {
 
 /* ============================================================
    CART DRAWER
+   ⚠ SHARED BY page-home + page-shop. Homepage and ShopPage each render
+     their own cart-drawer markup, so every .cart-* rule here styles BOTH.
+     Scope a one-page change, e.g.  .page-shop .cart-item-price { … }
    ============================================================ */
 #cart-overlay {
   position: fixed;
@@ -3492,6 +3504,8 @@ footer {
   justify-content: center;
 }
 
+/* ⚠ SITE-WIDE PRIMITIVE — .editorial-eyebrow (small tracked labels) appears
+   on 4+ pages. Scope one-page changes: .page-bed .editorial-eyebrow { … } */
 .editorial-eyebrow {
   font-family: var(--font-body);
   font-size: 0.72rem;
@@ -3663,6 +3677,11 @@ footer {
 
 /* ============================================================
    CATEGORY PAGE  (cp- prefix)
+   ⚠ SHARED BY 4 PAGES — page-textiles, page-bed, page-lighting,
+     page-outdoor. Editing any .cp-* rule below restyles ALL FOUR
+     category pages at once. To change just one, DO NOT edit the rule —
+     add a scoped override, e.g.  .page-bed .cp-card-price { … }
+     (See CLAUDE.md → "Page-scoped styling".)
    ============================================================ */
 
 /* ── Hero ── */
@@ -5886,7 +5905,11 @@ a.cp-card-artisan:hover {
   line-height: 1.8;
 }
 
-/* Cart sidebar (shop page) */
+/* Cart sidebar (shop page)
+   ⚠ MISLEADING NAME — these .cart-* selectors are NOT scoped to the shop
+     page. They are global and, being later in the file than the CART DRAWER
+     block above, they OVERRIDE those rules on page-home too. If you meant
+     these for the shop only, prefix them: .page-shop .cart-sidebar { … } */
 .cart-sidebar {
   position: fixed;
   top: 0;
