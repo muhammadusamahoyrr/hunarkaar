@@ -12,6 +12,7 @@
    ============================================================ */
 :root {
   /* ---- Design tokens — single source of truth: src/styles/tokens.ts ---- */
+  --header-height: 106px;
   --color-espresso: #1a1512;
   /* primary dark */
   --color-linen: #f1ede8;
@@ -11006,6 +11007,337 @@ a.pdp-shop-link:hover {
   .ot-triad {
     padding: 64px 6% 72px;
   }
+}
+
+/* ── Category quick navigation — sticky, premium, scroll-masked ── */
+.page-outdoor .ot-quick-nav-wrapper {
+  position: sticky;
+  top: var(--header-height, 106px);
+  z-index: 100;
+  background-color: rgba(241, 237, 232, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+}
+
+/* Linear-gradient mask overlay on the right to show scroll affordance on mobile */
+@media (max-width: 768px) {
+  .page-outdoor .ot-quick-nav-wrapper::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    background: linear-gradient(to right, rgba(241, 237, 232, 0), rgba(241, 237, 232, 0.98));
+    pointer-events: none;
+    z-index: 2;
+  }
+}
+
+.page-outdoor .ot-quick-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2.2rem;
+  padding: 1.1rem 2rem;
+  max-width: 1360px;
+  margin: 0 auto;
+  overflow-x: auto;
+  white-space: nowrap;
+  /* Hide scrollbar for clean luxury feel */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.page-outdoor .ot-quick-nav::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+@media (max-width: 768px) {
+  .page-outdoor .ot-quick-nav {
+    justify-content: flex-start;
+    padding: 1.1rem 2.5rem 1.1rem 1.5rem; /* extra right padding to scroll past gradient mask */
+    gap: 1.6rem;
+  }
+}
+
+.page-outdoor .ot-quick-nav-btn {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  position: relative;
+  padding: 0.45rem 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 0.3s var(--ease-out);
+}
+
+.page-outdoor .ot-quick-nav-btn:hover,
+.page-outdoor .ot-quick-nav-btn.active {
+  color: var(--text-primary);
+}
+
+.page-outdoor .ot-quick-nav-btn:focus-visible {
+  outline: 1px dashed var(--gold);
+  outline-offset: 4px;
+}
+
+/* Gold underline on active/hover via scaleX transition */
+.page-outdoor .ot-quick-nav-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.35s var(--ease-out);
+}
+
+.page-outdoor .ot-quick-nav-btn.active::after,
+.page-outdoor .ot-quick-nav-btn:hover::after {
+  transform: scaleX(1);
+}
+
+/* Clear filter styling on result counter */
+.page-outdoor .ot-reset-link:hover {
+  color: var(--gold-light) !important;
+}
+
+.page-outdoor .ot-reset-link:focus-visible {
+  outline: 1px dashed var(--gold);
+}
+
+/* ── alternating Category Blocks ── */
+.page-outdoor .ot-cat-block-container {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 50px; /* compressed from 100px */
+  margin-top: 50px; /* compressed from 100px */
+}
+
+.page-outdoor .ot-cat-block-container:last-child {
+  border-bottom: none;
+  padding-bottom: 20px;
+}
+
+.page-outdoor .ot-cat-block {
+  /* Scroll margin offset for sticky headers so elements land perfectly */
+  scroll-margin-top: 150px; /* adjusted from 175px */
+  width: 100%;
+}
+
+.page-outdoor .ot-cat-block-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* adjusted from 2.5rem */
+  margin-bottom: 2.5rem; /* compressed from 4rem */
+  padding: 0 4%;
+}
+
+/* Customized spacing and alignment to match premium sketch layout */
+.page-outdoor .ot-cat-block-text {
+  order: 2; /* Text goes below on mobile */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.page-outdoor .ot-cat-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+
+.page-outdoor .ot-cat-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 3.8vw, 3.5rem);
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--text-primary);
+  margin: 0 0 1.2rem 0;
+}
+
+.page-outdoor .ot-cat-desc {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.2vw, 1.2rem);
+  line-height: 1.8;
+  color: var(--text-stone);
+  max-width: 48ch;
+  margin: 0 0 2rem 0;
+}
+
+.page-outdoor .ot-cat-cta {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  border: 1px solid rgba(26, 21, 18, 0.25);
+  padding: 10px 26px;
+  border-radius: 999px; /* pill shape border */
+  transition: all 0.3s var(--ease-out);
+  text-decoration: none;
+}
+
+.page-outdoor .ot-cat-cta:hover {
+  background-color: var(--color-espresso);
+  color: var(--color-linen);
+  border-color: var(--color-espresso);
+}
+
+.page-outdoor .ot-cat-block-img-col {
+  order: 1; /* Image goes first on mobile */
+  width: 100%;
+}
+
+.page-outdoor .ot-cat-block-img-wrap {
+  width: 100%;
+  aspect-ratio: 3 / 2; /* Sleeker aspect ratio to reduce image height */
+  overflow: hidden;
+  border-radius: 12px;
+  position: relative;
+  background: var(--bg-darker);
+}
+
+.page-outdoor .ot-cat-block-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.05); /* initial scale for GSAP down-scale trigger */
+}
+
+/* Desktop alternating blocks row structure */
+@media (min-width: 1024px) {
+  .page-outdoor .ot-cat-block-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 4rem; /* compressed from 6rem */
+    margin-bottom: 3.5rem; /* compressed from 5rem */
+  }
+  
+  .page-outdoor .ot-row-reverse {
+    flex-direction: row-reverse;
+  }
+
+  .page-outdoor .ot-cat-block-text {
+    flex: 1 1 55%; /* wider text area for balance */
+    order: unset;
+    padding-right: 2rem;
+  }
+
+  .page-outdoor .ot-row-reverse .ot-cat-block-text {
+    padding-right: 0;
+    padding-left: 2rem;
+  }
+
+  .page-outdoor .ot-cat-block-img-col {
+    flex: 0 0 45%; /* narrower image area to eliminate blank spaces */
+    order: unset;
+    width: auto;
+  }
+}
+
+/* ── Horizontal Scrollable Product Row ── */
+.page-outdoor .ot-product-row-wrapper {
+  position: relative;
+  width: 100%;
+  padding: 0 4%;
+}
+
+.page-outdoor .ot-product-row {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 2rem;
+  width: 100%;
+}
+
+.page-outdoor .ot-product-row::-webkit-scrollbar {
+  display: none;
+}
+
+.page-outdoor .ot-product-card-wrap {
+  flex: 0 0 240px; /* standard card width on mobile */
+  scroll-snap-align: start;
+}
+
+.page-outdoor .ot-product-card-wrap .cp-card {
+  width: 100%;
+}
+
+/* Mobile Scroll-fade affordance */
+@media (max-width: 1023px) {
+  .page-outdoor .ot-product-row-wrapper::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    background: linear-gradient(to right, rgba(241, 237, 232, 0), rgba(241, 237, 232, 1));
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+/* Desktop Product Row adjustments */
+@media (min-width: 1024px) {
+  .page-outdoor .ot-product-row {
+    gap: 2rem;
+    padding-bottom: 2.5rem;
+    align-items: stretch; /* Cards are now uniform size, stretch is perfect */
+  }
+
+  .page-outdoor .ot-product-card-wrap {
+    flex: 0 0 300px; /* Consistent standard size for all cards (increased from 280px) */
+  }
+
+  /* Remove size mismatch: first card is now same size as standard cards */
+  .page-outdoor .ot-product-row .ot-product-card-wrap:first-child {
+    flex: 0 0 300px !important;
+  }
+}
+
+/* Locked Card Alignments regardless of title length */
+.page-outdoor .ot-product-row .cp-card-info {
+  display: flex;
+  flex-direction: column;
+  height: 110px; /* Locked alignment height */
+  justify-content: flex-start;
+  padding: 1rem 0.5rem 0.5rem;
+}
+
+.page-outdoor .ot-product-row .cp-card-name {
+  height: 44px; /* fixed 2-line height boundary */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+}
+
+.page-outdoor .ot-product-row .cp-card-price {
+  margin-top: auto; /* Push price strictly to the bottom */
 }
 
 /* ============================================================

@@ -71,83 +71,242 @@ interface OutdoorCategoryContentProps {
   products: OutdoorProduct[];
 }
 
-function OutdoorCategoryContent({ products }: OutdoorCategoryContentProps) {
-  const { currency, setCurrency, addToCart, setCartOpen, openBespoke } = useSiteContext();
-  const [activeSubcat, setActiveSubcat] = useState('All');
-  const [activeSort, setActiveSort]     = useState('Newest');
-  const gridRef = useRef<HTMLElement>(null);
+interface CategoryBlockProps {
+  id: string;
+  label: string;
+  eyebrow: string;
+  description: string;
+  featureImg: string;
+  reverse?: boolean;
+  products: OutdoorProduct[];
+  currency: 'USD' | 'PKR';
+  onQuickView: (p: any) => void;
+  onAddToCart: (p: any) => void;
+}
 
-  const displayProducts = products
-    .filter(p =>
-      activeSubcat === 'All' ||
-      p.category.toLowerCase().includes(activeSubcat.toLowerCase()) ||
-      p.name.toLowerCase().includes(activeSubcat.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (activeSort === 'Price ↑') return a.usdPrice - b.usdPrice;
-      if (activeSort === 'Price ↓') return b.usdPrice - a.usdPrice;
-      return 0;
-    });
-
-  const filterAndGo = (filter: string) => {
-    setActiveSubcat(filter);
-    gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+const CategoryBlock = React.forwardRef<HTMLDivElement, CategoryBlockProps>(({
+  id,
+  label,
+  eyebrow,
+  description,
+  featureImg,
+  reverse = false,
+  products,
+  currency,
+  onQuickView,
+  onAddToCart,
+}, ref) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const productRowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
-    const ctx = gsap.context(() => {
-      document.querySelectorAll('.cp-fade-in').forEach(el => {
-        gsap.fromTo(el,
-          { opacity: 0, y: 40 },
-          {
-            opacity: 1, y: 0, duration: 1.1, ease: 'power3.out',
-            scrollTrigger: { trigger: el, start: 'top 82%' },
-          }
-        );
-      });
-      gsap.fromTo('.ot-triad-col',
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1, y: 0, duration: 0.9, stagger: 0.14, ease: 'power2.out',
-          scrollTrigger: { trigger: '.ot-triad', start: 'top 78%' },
-        }
-      );
-      gsap.fromTo('.cp-card',
-        { opacity: 0, y: 36 },
-        {
-          opacity: 1, y: 0, duration: 0.9, stagger: 0.1, ease: 'power3.out',
-          scrollTrigger: { trigger: '.cp-grid', start: 'top 80%' },
-        }
-      );
-    });
+    const trigger = containerRef.current;
+    const img = imgRef.current;
+    if (!trigger || !img) return;
 
-    const refresh = () => ScrollTrigger.refresh();
-    window.addEventListener('load', refresh);
-    const t = setTimeout(refresh, 800);
+    // Smooth scroll-triggered scale effect (105% -> 100%) as the block enters viewport
+    const anim = gsap.fromTo(img,
+      { scale: 1.05 },
+      {
+        scale: 1.0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: trigger,
+          start: 'top bottom',
+          end: 'center center',
+          scrub: true,
+        }
+      }
+    );
+
     return () => {
-      window.removeEventListener('load', refresh);
-      clearTimeout(t);
-      ctx.revert();
+      anim.kill();
     };
   }, []);
 
-  useEffect(() => {
-    gsap.fromTo('.cp-card',
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, ease: 'power2.out' }
-    );
-  }, [activeSubcat, activeSort]);
-
-  const handleAddBundleToCart = (bundle: BundleSet) => {
-    bundle.products.forEach(p => addToCart(p));
-    setTimeout(() => setCartOpen(true), 200);
+  const handleExploreClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    productRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
+
+  return (
+    <section id={id} ref={containerRef} className="ot-cat-block cp-fade-in">
+      <div className={`ot-cat-block-row${reverse ? ' ot-row-reverse' : ''}`}>
+        <div className="ot-cat-block-text">
+          <span className="editorial-eyebrow ot-cat-eyebrow">{eyebrow}</span>
+          <h2 className="ot-cat-title">{label}</h2>
+          <p className="ot-cat-desc">{description}</p>
+          <a href={`#${id}-products`} onClick={handleExploreClick} className="cta-link ot-cat-cta">
+            Explore {label} →
+          </a>
+        </div>
+        <div className="ot-cat-block-img-col">
+          <div className="ot-cat-block-img-wrap">
+            <img ref={imgRef} src={featureImg} alt={label} className="ot-cat-block-img" />
+          </div>
+        </div>
+      </div>
+
+      <div id={`${id}-products`} ref={productRowRef} className="ot-product-row-wrapper">
+        <div className="ot-product-row">
+          {products.map((product) => (
+            <div key={product.id} className="ot-product-card-wrap">
+              <ProductCard product={product as any} imgFallback={featureImg} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+});
+
+CategoryBlock.displayName = 'CategoryBlock';
+
+function OutdoorCategoryContent({ products }: OutdoorCategoryContentProps) {
+  const { currency, setCurrency, addToCart, setCartOpen, setQuickView } = useSiteContext();
+  const [activeSubcat, setActiveSubcat] = useState('All');
+
+  const TABS = [
+    { id: 'All',         label: 'All Outdoor',       sectionId: 'hero' },
+    { id: 'Swing',       label: 'Jhoolas & Swings',  sectionId: 'swings' },
+    { id: 'Garden Sofa', label: 'Garden Sofas',      sectionId: 'sofas' },
+    { id: 'Dining',      label: 'Outdoor Dining',    sectionId: 'dining' },
+    { id: 'Planters',    label: 'Planters & Pots',   sectionId: 'planters' },
+    { id: 'Fountain',    label: 'Fountains',         sectionId: 'fountains' },
+  ];
+
+  const CATEGORY_SECTIONS = [
+    {
+      id: 'sofas',
+      label: 'Garden Sofas',
+      eyebrow: 'LUXURY LOUNGE',
+      description: 'Deep-seated teak and all-weather wicker sectionals designed for open-air conversations.',
+      featureImg: U('photo-clNTTnZOfwg', 900),
+      filterTag: 'Garden Sofa',
+    },
+    {
+      id: 'swings',
+      label: 'Jhoolas & Swings',
+      eyebrow: 'COURTYARD ANCHORS',
+      description: 'Solid sheesham wood swing sets and hand-woven rattan egg chairs built for quiet verandas.',
+      featureImg: U('photo-1595515106969-1ce29566ff1c', 900),
+      filterTag: 'Swing',
+    },
+    {
+      id: 'dining',
+      label: 'Outdoor Dining Sets',
+      eyebrow: 'AL FRESCO GATHERINGS',
+      description: 'Weatherproof sheesham tables and hand-tensioned rope dining chairs.',
+      featureImg: U('photo-1601760562234-9814eea6663a', 900),
+      filterTag: 'Dining',
+    },
+    {
+      id: 'planters',
+      label: 'Planters & Clay Pots',
+      eyebrow: 'HERITAGE CLAY',
+      description: 'Cobalt-blue Multan glazed ceramic jars and Hala terracotta planters.',
+      featureImg: U('photo-1416879595882-3373a0480b5b', 900),
+      filterTag: 'Planters',
+    },
+    {
+      id: 'fountains',
+      label: 'Courtyard Fountains',
+      eyebrow: 'SOUND & ILLUMINATION',
+      description: 'Hand-beaten copper water bowls and architectural tiered fountains.',
+      featureImg: U('photo-1543258103-a62bdc069871', 900),
+      filterTag: 'Fountain',
+    },
+  ];
+
+  const getCategoryProducts = (filterTag: string) => {
+    return products.filter(p =>
+      p.category.toLowerCase().includes(filterTag.toLowerCase()) ||
+      p.name.toLowerCase().includes(filterTag.toLowerCase())
+    );
+  };
+
+  const scrollToSection = (sectionId: string, tabId: string) => {
+    if (sectionId === 'hero') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setActiveSubcat('All');
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setActiveSubcat(tabId);
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const currentIndex = TABS.findIndex(t => t.id === activeSubcat);
+    if (currentIndex === -1) return;
+
+    let nextIndex = currentIndex;
+    if (e.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % TABS.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + TABS.length) % TABS.length;
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+    const nextTab = TABS[nextIndex];
+    scrollToSection(nextTab.sectionId, nextTab.id);
+
+    const buttons = e.currentTarget.querySelectorAll('button');
+    const nextButton = buttons[nextIndex] as HTMLButtonElement;
+    if (nextButton) {
+      nextButton.focus();
+    }
+  };
+
+  // Scrollspy to auto-select sticky quick-nav tabs on scroll
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-160px 0px -60% 0px',
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          if (sectionId === 'hero') {
+            setActiveSubcat('All');
+          } else {
+            const correspondingTab = TABS.find(t => t.sectionId === sectionId);
+            if (correspondingTab) {
+              setActiveSubcat(correspondingTab.id);
+            }
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    CATEGORY_SECTIONS.forEach(sec => {
+      const el = document.getElementById(sec.id);
+      if (el) observer.observe(el);
+    });
+
+    const heroEl = document.getElementById('hero');
+    if (heroEl) observer.observe(heroEl);
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="outdoor-container">
       {/* ── HERO ── */}
-      <section className="cp-hero ot-hero">
+      <section id="hero" className="cp-hero ot-hero">
         <img src={IMG_HERO} alt="Sunlit courtyard patio with dining set" className="cp-hero-bg" />
         <div className="cp-hero-overlay ot-hero-wash" />
         <div className="cp-hero-content">
@@ -166,169 +325,51 @@ function OutdoorCategoryContent({ products }: OutdoorCategoryContentProps) {
       </section>
 
       <main>
-        {/* ── THE TRIAD: swings / lounging / dining ── */}
-        <section className="ot-triad" aria-labelledby="ot-triad-h">
-          <div className="ot-triad-head">
-            <span className="ot-eyebrow">OUTDOOR SPACES</span>
-            <h2 id="ot-triad-h" className="ot-triad-title">Three kinds of living</h2>
-            <p className="ot-triad-sub">
-              Every garden needs structure. Start with the zone yours is missing.
-            </p>
-          </div>
-          <div className="ot-triad-row">
-            {TRIAD.map(t => (
-              <article className="ot-triad-col" key={t.term}>
-                <div className="ot-triad-img">
-                  <SafeImg src={t.img} fallback={IMG_HERO} alt="" />
-                </div>
-                <h3 className="ot-triad-term">{t.term}</h3>
-                <p className="ot-triad-body">{t.body}</p>
-                <button
-                  type="button"
-                  className="ot-triad-link"
-                  onClick={() => filterAndGo(t.filter)}
-                >
-                  {t.cta}
-                </button>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Subcategory Tiles ── */}
-        <section className="cp-sub-section panel-linen">
-          <div className="cp-sub-row">
-            {OUTDOOR_SUBCATS.map(sub => (
+        {/* ── STICKY QUICK-NAV FILTER BAR ── */}
+        <div className="ot-quick-nav-wrapper">
+          <div
+            className="ot-quick-nav"
+            role="tablist"
+            aria-label="Outdoor collection subcategories"
+            onKeyDown={handleKeyDown}
+          >
+            {TABS.map(tab => (
               <button
-                key={sub.id}
-                className={`cp-sub-tile${activeSubcat === sub.id ? ' active' : ''}`}
-                onClick={() => setActiveSubcat(sub.id)}
+                key={tab.id}
+                role="tab"
+                aria-selected={activeSubcat === tab.id}
+                tabIndex={activeSubcat === tab.id ? 0 : -1}
+                className={`ot-quick-nav-btn${activeSubcat === tab.id ? ' active' : ''}`}
+                onClick={() => scrollToSection(tab.sectionId, tab.id)}
               >
-                <div className="cp-sub-img">
-                  <SafeImg src={sub.img} fallback={IMG_HERO} alt={sub.label} />
-                </div>
-                <span className="cp-sub-label">{sub.label}</span>
+                {tab.label}
               </button>
             ))}
-          </div>
-        </section>
-
-        {/* ── Filter Bar ── */}
-        <div className="cp-filter-bar">
-          <div className="cp-filter-left">
-            <span className="cp-filter-label">Sort:</span>
-            {SORT_OPTIONS.map(opt => (
-              <button
-                key={opt}
-                className={`cp-filter-opt${activeSort === opt ? ' active' : ''}`}
-                onClick={() => setActiveSort(opt)}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-          <div className="cp-filter-right">
-            <span className="cp-filter-count">
-              {displayProducts.length} {displayProducts.length === 1 ? 'piece' : 'pieces'}
-              {activeSubcat !== 'All' && ` — ${activeSubcat}`}
-            </span>
-            <div
-              className="currency-toggle"
-              onClick={() => setCurrency(c => c === 'USD' ? 'PKR' : 'USD')}
-              style={{ cursor: 'pointer', display: 'flex', gap: '0.4rem', fontSize: '0.72rem', letterSpacing: '0.1em' }}
-            >
-              <span style={{ fontWeight: currency === 'USD' ? 500 : 300 }}>USD</span>
-              <span style={{ opacity: 0.4 }}>|</span>
-              <span style={{ fontWeight: currency === 'PKR' ? 500 : 300 }}>PKR</span>
-            </div>
           </div>
         </div>
 
-        {/* ── Product Grid ── */}
-        <section ref={gridRef} id="ot-products" className="panel-linen" style={{ paddingBottom: '80px' }}>
-          {displayProducts.length === 0 ? (
-            <div className="cp-empty-state">
-              <p>No pieces found in this selection.</p>
-              <button className="cta-link" onClick={() => setActiveSubcat('All')}>
-                View All Outdoor
-              </button>
-            </div>
-          ) : (
-            <div className="cp-grid">
-              {displayProducts.map(product => (
-                <ProductCard key={product.id} product={product as any} imgFallback={IMG_HERO} />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* ── BUILD YOUR SET (Bundles) ── */}
-        <section className="outdoor-bundle-section cp-fade-in">
-          <div className="outdoor-bundle-header">
-            <span className="editorial-eyebrow">COORDINATED VERANDAS</span>
-            <h2>Build Your Set</h2>
-            <p>Carefully composed furniture packages — mix jhoolay, planters, and dining sets for a complete courtyard identity.</p>
-          </div>
-          <div className="outdoor-bundles-row">
-            {OUTDOOR_BUNDLES.map(bundle => (
-              <div key={bundle.id} className="outdoor-bundle-card">
-                <div className="outdoor-bundle-info">
-                  <h3>{bundle.name}</h3>
-                  <p className="outdoor-bundle-desc">{bundle.description}</p>
-                  <div className="outdoor-bundle-price-box">
-                    <span className="bundle-price-label">Curated Set Value</span>
-                    <span className="bundle-price-tag">
-                      {currency === 'USD' ? `$${bundle.bundlePriceUsd}` : `PKR ${bundle.bundlePricePkr.toLocaleString()}`}
-                    </span>
-                    <span className="bundle-price-save">Save {currency === 'USD' ? '$100+' : 'PKR 28,000+'} on bundle</span>
-                  </div>
-                  <button type="button" className="outdoor-bundle-cta" onClick={() => handleAddBundleToCart(bundle)}>
-                    Add Entire Set to Bag
-                  </button>
-                </div>
-                <div className="outdoor-bundle-items-scroll">
-                  {bundle.products.map((item, idx) => (
-                    <div key={idx} className="outdoor-bundle-item-card">
-                      <div className="outdoor-bundle-item-img"><img src={item.img} alt={item.name} /></div>
-                      <div className="outdoor-bundle-item-details">
-                        <h4>{item.name}</h4>
-                        <span>{item.category}</span>
-                        <p className="item-price">{currency === 'USD' ? `$${item.usdPrice}` : `PKR ${item.pkrPrice.toLocaleString()}`}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+        {/* ── CATEGORY BLOCKS LIST ── */}
+        <div className="ot-blocks-container">
+          {CATEGORY_SECTIONS.map((sec, idx) => {
+            const catProducts = getCategoryProducts(sec.filterTag);
+            return (
+              <div key={sec.id} className="ot-cat-block-container">
+                <CategoryBlock
+                  id={sec.id}
+                  label={sec.label}
+                  eyebrow={sec.eyebrow}
+                  description={sec.description}
+                  featureImg={sec.featureImg}
+                  reverse={idx % 2 === 1}
+                  products={catProducts}
+                  currency={currency}
+                  onQuickView={setQuickView}
+                  onAddToCart={addToCart}
+                />
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── EDITORIAL / CALL TO ACTION ── */}
-        <div className="cp-section-divider" />
-        <section className="ot-shadow panel-sandstone cp-fade-in">
-          <div className="ot-shadow-img">
-            <SafeImg src={IMG_SHADOW} alt="Courtyard fountain lighting" fallback={IMG_HERO} />
-          </div>
-          <div className="ot-shadow-content">
-            <span className="editorial-eyebrow cp-ink-soft">THE GUILD TRADE</span>
-            <h2 className="ot-shadow-title">Crafted for local skies</h2>
-            <p className="ot-shadow-body">
-              Every swing, planter, and copper fountain is built by hand in regional workshops across Pakistan. Seasoned sheesham, marine-grade oils, and UV-stabilised rattan ensure they age gracefully under the sun and rain.
-            </p>
-            <div className="ot-shadow-ctas">
-              <Link href="/shop" className="cta-link cp-ink-cta">
-                Browse Full Collection
-              </Link>
-              <button
-                type="button"
-                className="cta-link cp-ink-cta ot-shadow-commission"
-                onClick={() => openBespoke('Bespoke Veranda Furniture')}
-              >
-                Commission Bespoke
-              </button>
-            </div>
-          </div>
-        </section>
+            );
+          })}
+        </div>
       </main>
     </div>
   );
