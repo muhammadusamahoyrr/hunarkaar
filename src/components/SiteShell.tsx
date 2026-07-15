@@ -70,9 +70,14 @@ export function SafeImg({
    ============================================================ */
 interface SiteShellProps {
   children: React.ReactNode;
+  /* Page-scope class (e.g. "page-bed"). Every route wraps its content in a
+     div carrying this class so page-specific CSS overrides can be written as
+     `.page-bed .cta-link { … }` and cannot leak into other pages that share
+     the same global class. See CLAUDE.md → "Page-scoped styling". */
+  scope?: string;
 }
 
-export default function SiteShell({ children }: SiteShellProps) {
+export default function SiteShell({ children, scope }: SiteShellProps) {
   /* ---------- cart (shared, persisted — see lib/CartContext) ---------- */
   const {
     cart, addToCart, removeFromCart, updateQty, cartCount,
@@ -481,7 +486,9 @@ export default function SiteShell({ children }: SiteShellProps) {
       </div>
 
       {/* ── PAGE CONTENT ── */}
-      {children}
+      <div className={`page-scope${scope ? ` ${scope}` : ''}`} data-page={scope}>
+        {children}
+      </div>
 
       {/* ── FOOTER ── */}
       <footer id="site-footer">

@@ -82,6 +82,30 @@
 
 }
 
+/* ============================================================
+   PAGE-SCOPED STYLING — READ BEFORE EDITING A SHARED CLASS
+   ------------------------------------------------------------
+   Every route wraps its content in `<div class="page-scope page-XXX">`
+   (SiteShell adds it via its `scope` prop; Homepage and ShopPage add it
+   inline). Scopes in use:
+     page-home · page-shop (+ page-shop-living / page-shop-dining)
+     page-textiles · page-bed · page-outdoor · page-lighting
+     page-rooms · page-artisan · page-product
+
+   ALL styles live in this one file and load on every page, so editing a
+   shared class (.cta-link, .panel-linen, .hp-section-heading, …) changes
+   EVERY page that uses it. To restyle a class on ONE page only, DO NOT edit
+   the shared rule — add a scoped override instead:
+
+       .page-bed .cta-link { color: var(--gold); }   ← only the Bed page
+
+   The wrapper is a plain block box: it adds no layout of its own, so
+   full-bleed sections and fixed headers are unaffected. Keep it that way —
+   do not give .page-scope padding, margin, transform, or overflow. */
+.page-scope {
+  display: block;
+}
+
 /* Panel alternating blocks — color flows to all children via inherit */
 .panel-linen {
   background-color: var(--bg-light);

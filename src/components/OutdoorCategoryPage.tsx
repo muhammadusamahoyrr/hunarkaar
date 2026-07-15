@@ -336,7 +336,7 @@ function OutdoorCategoryContent({ products }: OutdoorCategoryContentProps) {
 
 export default function OutdoorCategoryPage({ products }: { products: OutdoorProduct[] }) {
   return (
-    <SiteShell>
+    <SiteShell scope="page-outdoor">
       <OutdoorCategoryContent products={products} />
     </SiteShell>
   );

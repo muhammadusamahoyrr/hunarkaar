@@ -552,7 +552,7 @@ function DetailContent({ product, related }: ProductDetailProps) {
 
 export default function ProductDetail(props: ProductDetailProps) {
   return (
-    <SiteShell>
+    <SiteShell scope="page-product">
       <DetailContent {...props} />
     </SiteShell>
   );

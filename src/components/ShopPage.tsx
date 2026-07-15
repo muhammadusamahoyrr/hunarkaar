@@ -309,7 +309,7 @@ export default function ShopPage({
   }, [allProducts]);
 
   return (
-    <>
+    <div className={`page-scope page-shop page-shop-${categoryType}`} data-page="page-shop">
       {/* =====================================================
            HEADER — PB-style 5-row
          ===================================================== */}
@@ -917,6 +917,6 @@ export default function ShopPage({
           </div>
         </footer>
       </main>
-    </>
+    </div>
   );
 }

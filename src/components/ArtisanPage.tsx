@@ -233,7 +233,7 @@ function Dossier({ artisan, craft, works, macros }: ArtisanPageProps) {
 
 export default function ArtisanPage(props: ArtisanPageProps) {
   return (
-    <SiteShell>
+    <SiteShell scope="page-artisan">
       <Dossier {...props} />
     </SiteShell>
   );

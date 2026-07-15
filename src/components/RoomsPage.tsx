@@ -383,7 +383,7 @@ function RoomsContent() {
 
 export default function RoomsPage() {
   return (
-    <SiteShell>
+    <SiteShell scope="page-rooms">
       <RoomsContent />
     </SiteShell>
   );

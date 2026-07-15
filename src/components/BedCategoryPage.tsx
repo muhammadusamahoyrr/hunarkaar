@@ -523,7 +523,7 @@ interface BedCategoryPageProps {
 
 export default function BedCategoryPage(props: BedCategoryPageProps) {
   return (
-    <SiteShell>
+    <SiteShell scope="page-bed">
       <BedCategoryContent {...props} />
     </SiteShell>
   );

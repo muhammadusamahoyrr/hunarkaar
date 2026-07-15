@@ -1334,7 +1334,7 @@ export default function Homepage({ initialProducts }: HomepageProps) {
      RENDER
   ---------------------------------------------------------- */
   return (
-    <>
+    <div className="page-scope page-home" data-page="page-home">
       {/* =====================================================
            PRELOADER
          ===================================================== */}
@@ -2472,6 +2472,6 @@ export default function Homepage({ initialProducts }: HomepageProps) {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

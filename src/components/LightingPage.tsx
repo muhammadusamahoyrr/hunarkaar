@@ -310,7 +310,7 @@ function LightingContent({ products }: LightingContentProps) {
 
 export default function LightingPage(props: LightingContentProps) {
   return (
-    <SiteShell>
+    <SiteShell scope="page-lighting">
       <LightingContent {...props} />
     </SiteShell>
   );

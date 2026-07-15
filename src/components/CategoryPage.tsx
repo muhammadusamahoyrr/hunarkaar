@@ -572,7 +572,7 @@ export interface CategoryPageProps {
 
 export default function CategoryPage(props: CategoryPageProps) {
   return (
-    <SiteShell>
+    <SiteShell scope="page-textiles">
       <CategoryContent {...props} />
     </SiteShell>
   );

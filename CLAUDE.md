@@ -162,6 +162,23 @@ design.md             ← Full RH-inspired design system spec (READ THIS)
 - `.mega-col-heading` — "Products" / "Artisans" etc (1.5rem, weight 500)
 - `.nav-sale` — red `#c0392b` for the Sale link
 
+## Page-scoped styling — WHY EDITS "LEAK" BETWEEN PAGES
+All CSS lives in the single `globals.css` and loads on **every** page, so
+editing a shared class (`.cta-link`, `.panel-linen`, `.hp-section-heading`, …)
+silently restyles every page that uses it. To prevent this, each route wraps
+its content in `<div class="page-scope page-XXX">`:
+- **SiteShell pages** pass a `scope` prop — e.g. `<SiteShell scope="page-bed">`.
+  Scopes: `page-textiles` (CategoryPage), `page-bed`, `page-outdoor`,
+  `page-lighting`, `page-rooms`, `page-artisan`, `page-product`.
+- **Homepage** and **ShopPage** have their own shells and add the wrapper
+  inline: `page-home`, and `page-shop` (+ `page-shop-living` / `page-shop-dining`).
+
+**Rule: to restyle a shared class on ONE page, never edit the shared rule —
+add a scoped override**, e.g. `.page-bed .cta-link { … }`. Before editing any
+class in `globals.css`, grep how many pages use it. The `.page-scope` wrapper
+is a plain block box with no layout of its own — do not give it padding,
+margin, transform, or overflow, or full-bleed sections will break.
+
 ## What Has Been Completed
 - [x] RH-style 2-row header
 - [x] Mega menu dropdown (4 columns with per-column images)
