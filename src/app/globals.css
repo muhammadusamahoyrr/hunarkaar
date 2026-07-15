@@ -10790,6 +10790,225 @@ a.pdp-shop-link:hover {
 }
 
 /* ============================================================
+   OUTDOOR PAGE  (ot- prefix)
+
+   OutdoorCategoryPage is a structural clone of LightingPage, but its
+   .ot-* rules were never written, so the triad and shadow sections fell
+   back to unstyled left-aligned block flow. These mirror the .lt-* rules
+   above. Deliberately NOT mirrored: the hero. Outdoor's hero runs DARK
+   (cream cp-hero type over a dimmed photo, via the shared cp-hero
+   defaults) — cloning .lt-hero-wash + the espresso .lt-hero overrides
+   would put dark ink on a dark hero. Leave .ot-hero on cp defaults.
+   ============================================================ */
+
+/* ── The triad — linen, espresso ink; the photos carry the scene ── */
+.ot-triad {
+  background: var(--bg-light);
+  color: var(--text-primary);
+  border-top: 1px solid var(--border);
+  padding: 90px 4% 100px;
+}
+
+.ot-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 300;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(26, 21, 18, 0.55);
+}
+
+.ot-triad-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 4rem;
+}
+
+.ot-triad-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.ot-triad-sub {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 300;
+  color: var(--color-stone);
+}
+
+.ot-triad-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+.ot-triad-img {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--bg-darker);
+}
+
+.ot-triad-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.9s var(--ease-out);
+}
+
+.ot-triad-col:hover .ot-triad-img img {
+  transform: scale(1.04);
+}
+
+.ot-triad-term {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin: 1.6rem 0 0.8rem;
+}
+
+.ot-triad-body {
+  font-family: var(--font-display);
+  font-size: 1.14rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: rgba(44, 37, 32, 0.8);
+  max-width: 34ch;
+}
+
+.ot-triad-link {
+  display: inline-block;
+  margin-top: 1.4rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(26, 21, 18, 0.45);
+  padding: 0 0 4px;
+  cursor: pointer;
+  transition: opacity 0.3s var(--ease-out);
+}
+
+.ot-triad-link:hover {
+  opacity: 0.65;
+}
+
+/* ── The shadow panel — sandstone close, espresso ink, image right ── */
+.ot-shadow {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  min-height: 540px;
+}
+
+.ot-shadow-content {
+  order: 1;
+  padding: 80px 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.4rem;
+  color: var(--color-espresso);
+}
+
+/* Height cap: without it the unconstrained image column stretches the
+   whole panel to the photo's intrinsic ratio. */
+.ot-shadow-img {
+  order: 2;
+  overflow: hidden;
+  max-height: 640px;
+}
+
+.ot-shadow-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.9s var(--ease-out);
+}
+
+.ot-shadow:hover .ot-shadow-img img {
+  transform: scale(1.03);
+}
+
+/* Weight 500 on sandstone — a 300 serif stroke goes weak on a mid-tone. */
+.ot-shadow-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 3.8vw, 3.4rem);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.12;
+  color: var(--color-espresso);
+  margin: 0;
+}
+
+.ot-shadow-body {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  line-height: 1.8;
+  color: rgba(26, 21, 18, 0.85);
+  max-width: 52ch;
+}
+
+.ot-shadow-ctas {
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .ot-shadow {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .ot-shadow-img {
+    order: 1;
+    height: 380px;
+  }
+
+  .ot-shadow-content {
+    order: 2;
+    padding: 56px 6%;
+  }
+}
+
+@media (max-width: 900px) {
+  .ot-triad-row {
+    grid-template-columns: 1fr;
+    gap: 3.2rem;
+    max-width: 560px;
+  }
+
+  .ot-triad-body {
+    max-width: none;
+  }
+
+  .ot-triad {
+    padding: 64px 6% 72px;
+  }
+}
+
+/* ============================================================
    SHOP ROOMS  (rm- prefix)
 
    Replaces ~300 lines of inline style objects — inline styles
